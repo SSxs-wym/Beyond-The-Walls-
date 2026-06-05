@@ -208,4 +208,4 @@ Shawshank Pixel Escape/
 
 本项目为比赛展示的互动叙事小游戏 Demo，重点展示 HTML5 Canvas 游戏开发、剧情流程设计、像素风视觉表达和网页端交互体验。
 
-![开始界面](./图片/start_screen.png)
+![开始界面](shawshank_pixel_escape/images/start_screen.png)
