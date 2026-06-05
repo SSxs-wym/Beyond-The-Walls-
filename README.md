@@ -213,3 +213,4 @@ Shawshank Pixel Escape/
 ![牢房场景](shawshank_pixel_escape/images/cell.png)
 ![劳作区场景](shawshank_pixel_escape/images/yard.png)
 ![保险柜](shawshank_pixel_escape/images/safe.png)
+![办公室](shawshank_pixel_escape/images/office.png)
