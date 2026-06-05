@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Shawshank Pixel Escape</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #game {
+      display: block;
+      width: min(100vw, calc(100vh * 16 / 9));
+      height: min(100vh, calc(100vw * 9 / 16));
+      background: #000;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    #developerTool {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      grid-template-columns: 430px 1fr;
+      background: rgba(7, 8, 9, 0.72);
+      color: #f1eee5;
+      font-family: system-ui, "Microsoft YaHei", "PingFang SC", sans-serif;
+      touch-action: auto;
+    }
+
+    #developerTool.dev-open {
+      display: grid;
+    }
+
+    #developerTool button,
+    #developerTool select,
+    #developerTool input,
+    #developerTool textarea {
+      font: inherit;
+    }
+
+    #developerTool button {
+      min-height: 34px;
+      border: 1px solid #383d42;
+      border-radius: 7px;
+      background: #2a2e32;
+      color: #f1eee5;
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+
+    #developerTool button:hover,
+    #developerTool button:focus-visible {
+      border-color: #d8b45d;
+      outline: none;
+    }
+
+    #developerTool button.primary {
+      background: #3b3320;
+      border-color: #7d642b;
+      color: #ffe4a3;
+      font-weight: 700;
+    }
+
+    #developerTool button.danger {
+      background: #39211f;
+      border-color: #7e3a34;
+      color: #ffc3bc;
+    }
+
+    #developerTool button.small {
+      min-height: 28px;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+
+    #developerTool select,
+    #developerTool textarea {
+      width: 100%;
+      border: 1px solid #383d42;
+      border-radius: 7px;
+      background: #111315;
+      color: #f1eee5;
+      padding: 8px 9px;
+    }
+
+    #developerTool textarea {
+      min-height: 132px;
+      resize: vertical;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .dev-sidebar {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #2b2f34;
+      background: #17191b;
+    }
+
+    .dev-head {
+      display: grid;
+      gap: 8px;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid #383d42;
+      background: #161719;
+    }
+
+    .dev-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .dev-title-row h1 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    .dev-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #b6afa0;
+      font-size: 12px;
+    }
+
+    .dev-dot {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: #e56d5f;
+    }
+
+    .dev-dot.ready {
+      background: #7ccf7a;
+    }
+
+    .dev-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid #383d42;
+    }
+
+    .dev-tab {
+      border: 0;
+      border-right: 1px solid #383d42;
+      border-radius: 0;
+      background: #1b1d20;
+      color: #b6afa0;
+      font-size: 13px;
+      min-height: 39px;
+    }
+
+    .dev-tab:last-child {
+      border-right: 0;
+    }
+
+    .dev-tab.active {
+      color: #f1eee5;
+      background: #25282c;
+      box-shadow: inset 0 -2px 0 #d8b45d;
+    }
+
+    .dev-content {
+      min-height: 0;
+      overflow: auto;
+      padding: 14px;
+    }
+
+    .dev-pane {
+      display: none;
+    }
+
+    .dev-pane.active {
+      display: block;
+    }
+
+    .dev-section {
+      margin-bottom: 12px;
+      overflow: hidden;
+      border: 1px solid #383d42;
+      border-radius: 8px;
+      background: #1b1d1f;
+    }
+
+    .dev-section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #383d42;
+      background: #202327;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .dev-section-body {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+    }
+
+    .dev-grid-two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .dev-inline {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .dev-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .dev-preset {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .dev-preset strong,
+    .dev-preset span {
+      display: block;
+    }
+
+    .dev-preset span span {
+      margin-top: 3px;
+      color: #b6afa0;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .dev-tag {
+      align-self: center;
+      color: #61c7b5;
+      font-size: 12px;
+      font-style: normal;
+      white-space: nowrap;
+    }
+
+    .dev-state-grid {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 6px 10px;
+      margin: 0;
+      font-size: 12px;
+    }
+
+    .dev-state-grid dt {
+      color: #b6afa0;
+    }
+
+    .dev-state-grid dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .dev-flags {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 10px;
+      font-size: 12px;
+    }
+
+    .dev-flag {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      color: #f1eee5;
+    }
+
+    .dev-flag span {
+      overflow-wrap: anywhere;
+    }
+
+    .dev-hint {
+      margin: 0;
+      color: #b6afa0;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .dev-log {
+      min-height: 150px;
+      max-height: 220px;
+      overflow: auto;
+      white-space: pre-wrap;
+      border: 1px solid #383d42;
+      border-radius: 7px;
+      background: #111315;
+      color: #b6afa0;
+      padding: 8px;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .dev-stage {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 14px;
+      pointer-events: none;
+    }
+
+    .dev-stage-card {
+      width: min(720px, 100%);
+      border: 1px solid rgba(216, 180, 93, 0.55);
+      border-radius: 8px;
+      background: rgba(15, 17, 19, 0.88);
+      padding: 12px 14px;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+    }
+
+    .dev-stage-card strong,
+    .dev-stage-card span {
+      display: block;
+    }
+
+    .dev-stage-card span {
+      margin-top: 4px;
+      color: #b6afa0;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 860px) {
+      #developerTool {
+        grid-template-columns: 1fr;
+      }
+
+      .dev-stage {
+        display: none;
+      }
+
+      .dev-sidebar {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="1280" height="720" aria-label="肖申克像素逃脱"></canvas>
+  <script src="./js/main.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      const TRIGGER_WINDOW_MS = 1000;
+      const REFRESH_MS = 450;
+      const CHECKPOINTS = [
+        "CP_START",
+        "CP_AFTER_WHITE_LIGHT",
+        "CP_HAMMER_OBTAINED",
+        "CP_BIBLE_OBTAINED",
+        "CP_INSPECTION_PASSED",
+        "CP_FIRST_DIG",
+        "CP_SOIL_DISPOSE",
+        "CP_OFFICE_DIALOGUE_DONE",
+        "CP_FINAL_DIG",
+        "CP_PIPE_GAME",
+        "CP_ENDING_SELECT"
+      ];
+      const FLAG_KEYS = [
+        "hasHammer",
+        "hasBible",
+        "hasLedger",
+        "hasSoilPile",
+        "bibleUsed",
+        "ledgerFound",
+        "ledgerSwapped",
+        "finalDigUnlocked",
+        "inspectionPassed",
+        "hasAttributeC",
+        "hasAttributeD",
+        "twentyYearsPassed",
+        "postMontageRedSpoken",
+        "mapRevealActive",
+        "mapDrawn",
+        "hasMap",
+        "redHammerDelivered",
+        "brooksBibleDelivered"
+      ];
+      const RAW_SCENES = [
+        "menu",
+        "livingRoom",
+        "recap",
+        "whiteLight",
+        "cell",
+        "yard",
+        "dig",
+        "montage",
+        "office",
+        "pipe",
+        "pause",
+        "fail"
+      ];
+      const PRESETS = [
+        { group: "开场", title: "开始界面", note: "全新状态，停在菜单", code: `devSetProgress({}); devCheckpoint("CP_START"); devEnterScene("menu");` },
+        { group: "开场", title: "客厅观影", note: "电视循环阶段，可按 E/空格推进", code: `devSetProgress({}); devCheckpoint("CP_START"); devEnterScene("livingRoom"); GameState.opening.phase = "tvLoop"; GameState.opening.timer = 0; GameState.currentQuest = "quest_living_room_tv";` },
+        { group: "开场", title: "剧情回顾分镜", note: "直接进入漫画/字幕推进点", code: `devSetProgress({}); devEnterScene("recap"); GameState.opening.phase = "storyImage"; GameState.opening.timer = 0; GameState.currentQuest = "quest_recap";` },
+        { group: "开场", title: "白光转场", note: "吸入电影世界前", code: `devSetProgress({}); devCheckpoint("CP_AFTER_WHITE_LIGHT"); devEnterScene("whiteLight"); GameState.opening.phase = "inhale01"; GameState.opening.timer = 0;` },
+        { group: "前期", title: "牢房醒来", note: "无道具，熟悉移动", code: `devSetProgress({}); devCheckpoint("CP_AFTER_WHITE_LIGHT"); devEnterScene("cell"); setPlayerFootToCellImage(620, 920); GameState.currentQuest = "quest_cell_wake";` },
+        { group: "前期", title: "首次进入劳作区", note: "找瑞德拿锤子", code: `devSetProgress({}); devCheckpoint("CP_AFTER_WHITE_LIGHT"); devEnterScene("yard"); setPlayerFootToYardImage(360, 710); updateYardCamera(); GameState.currentQuest = "quest_yard_red";` },
+        { group: "前期", title: "瑞德交付前", note: "站在瑞德交互区", code: `devSetProgress({}); devEnterScene("yard"); setPlayerFootToYardImage(365, 700); updateYardCamera(); GameState.currentQuest = "quest_yard_red";` },
+        { group: "前期", title: "已获得锤子", note: "下一步找老布拿圣经", code: `devSetProgress({ hasHammer: true, redHammerDelivered: true }); devCheckpoint("CP_HAMMER_OBTAINED"); devEnterScene("yard"); setPlayerFootToYardImage(1275, 238); updateYardCamera(); GameState.currentQuest = "quest_yard_library";` },
+        { group: "失败分支", title: "查房失败测试", note: "只有锤子，没有圣经", code: `devSetProgress({ hasHammer: true, redHammerDelivered: true }); devCheckpoint("CP_HAMMER_OBTAINED"); devEnterScene("cell"); setPlayerFootToCellImage(620, 520); startCellInspection();` },
+        { group: "前期", title: "已获得圣经", note: "回牢房触发查房", code: `devSetProgress({ hasHammer: true, hasBible: true, redHammerDelivered: true, brooksBibleDelivered: true }); devCheckpoint("CP_BIBLE_OBTAINED"); devEnterScene("cell"); setPlayerFootToCellImage(620, 520); GameState.currentQuest = "quest_yard_bible_obtained";` },
+        { group: "中期", title: "查房通过", note: "墙画可进入第一次土洞", code: `devSetProgress({ hasHammer: true, hasBible: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true }); devCheckpoint("CP_INSPECTION_PASSED"); devEnterScene("cell"); setPlayerFootToCellImage(CellLayout.pictureStandPoint.x, CellLayout.pictureStandPoint.y); GameState.currentQuest = "quest_cell_inspection_passed";` },
+        { group: "中期", title: "第一次挖洞", note: "站在右侧挖洞区域", code: `devSetProgress({ hasHammer: true, hasBible: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true }); devCheckpoint("CP_INSPECTION_PASSED"); devEnterScene("dig"); GameState.dig.playerX = DigLayout.digZone.x + DigLayout.digZone.w / 2 - GameState.dig.playerW / 2; GameState.dig.playerY = DigLayout.walkRect.y + 2; GameState.dig.facing = "right"; GameState.currentQuest = "quest_dig_first";` },
+        { group: "中期", title: "已挖出小土堆", note: "从左侧出口回牢房", code: `devSetProgress({ hasHammer: true, hasBible: true, hasSoilPile: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true }); devCheckpoint("CP_FIRST_DIG"); devEnterScene("dig"); GameState.dig.digProgress = DIG_REQUIRED_SECONDS; placeDigPlayerAtSoilPileMoment();` },
+        { group: "中期", title: "劳作区撒土", note: "持有土，站在撒土区", code: `devSetProgress({ hasHammer: true, hasBible: true, hasSoilPile: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true }); devCheckpoint("CP_FIRST_DIG"); devEnterScene("yard"); setPlayerFootToYardImage(820, 456); updateYardCamera(); GameState.currentQuest = "quest_yard_soil";` },
+        { group: "失败分支", title: "撒土失败画面", note: "直接进入被狱警发现后的失败状态", code: `devSetProgress({ hasHammer: true, hasBible: true, hasSoilPile: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true }); devCheckpoint("CP_FIRST_DIG"); devEnterScene("yard"); setPlayerFootToYardImage(820, 456); updateYardCamera(); failSoilDumpByGuard();` },
+        { group: "中期", title: "撒土完成", note: "回牢房睡觉触发多年蒙太奇", code: `devSetProgress({ hasHammer: true, hasBible: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeD: true }); GameState.soilDump.completedCount = SOIL_DUMP_REQUIRED_COUNT; devCheckpoint("CP_SOIL_DISPOSE"); devEnterScene("cell"); setPlayerFootToCellImage(CellLayout.bed.x + CellLayout.bed.w / 2, CellLayout.bed.y + CellLayout.bed.h - 18); GameState.currentQuest = "quest_cell_sleep_after_soil";` },
+        { group: "中期", title: "二十年蒙太奇", note: "直接播放长期计划段落", code: `devSetProgress({ hasHammer: true, hasBible: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeD: true }); devEnterScene("montage");` },
+        { group: "后期", title: "二十年后找瑞德", note: "回到劳作区确认下一步计划", code: `devSetProgress({ hasHammer: true, hasBible: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, twentyYearsPassed: true }); devCheckpoint("CP_SOIL_DISPOSE"); devEnterScene("yard"); setPlayerFootToYardImage(365, 700); updateYardCamera(); GameState.currentQuest = "quest_yard_find_red_after_montage";` },
+        { group: "后期", title: "画地图", note: "已和瑞德聊完，回牢房桌前", code: `devSetProgress({ hasHammer: true, hasBible: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, twentyYearsPassed: true, postMontageRedSpoken: true }); devEnterScene("cell"); setPlayerFootToCellImage(620, 878); GameState.currentQuest = "quest_cell_draw_map";` },
+        { group: "后期", title: "已取得地图", note: "可进入典狱长办公室", code: `devSetProgress({ hasHammer: true, hasBible: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, twentyYearsPassed: true, postMontageRedSpoken: true, mapDrawn: true, hasMap: true }); devEnterScene("yard"); setPlayerFootToYardImage(164, 610); updateYardCamera(); GameState.currentQuest = "quest_cell_map_obtained";` },
+        { group: "后期", title: "办公室对话前", note: "站在典狱长旁", code: `devSetProgress({ hasHammer: true, hasBible: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, twentyYearsPassed: true, postMontageRedSpoken: true, mapDrawn: true, hasMap: true }); devEnterScene("office"); setPlayerFootToOfficeImage(760, 626); GameState.currentQuest = "quest_office_warden";` },
+        { group: "后期", title: "典狱长已离开", note: "检查刺绣找到账本", code: `devSetProgress({ hasHammer: true, hasBible: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, twentyYearsPassed: true, postMontageRedSpoken: true, mapDrawn: true, hasMap: true }); devCheckpoint("CP_OFFICE_DIALOGUE_DONE"); devEnterScene("office"); GameState.office.wardenPhase = "gone"; GameState.office.wardenX = OfficeLayout.wardenExit.x; GameState.office.wardenY = OfficeLayout.wardenExit.y; setPlayerFootToOfficeImage(166, 520); GameState.currentQuest = "quest_office_embroidery";` },
+        { group: "后期", title: "保险柜账本界面", note: "可点击账本完成调包", code: `devSetProgress({ hasHammer: true, hasBible: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, twentyYearsPassed: true, postMontageRedSpoken: true, mapDrawn: true, hasMap: true, ledgerFound: true }); devCheckpoint("CP_OFFICE_DIALOGUE_DONE"); devEnterScene("office"); GameState.office.wardenPhase = "gone"; GameState.office.wardenX = OfficeLayout.wardenExit.x; GameState.office.wardenY = OfficeLayout.wardenExit.y; GameState.office.embroideryChecked = true; GameState.office.safeViewOpen = true; GameState.office.safeStage = "ledgerFound"; GameState.currentQuest = "quest_office_swap_ledger";` },
+        { group: "后期", title: "已完成账本调包", note: "回牢房进入最终土洞", code: `devSetProgress({ hasHammer: true, hasBible: true, hasLedger: true, bibleUsed: true, ledgerFound: true, ledgerSwapped: true, finalDigUnlocked: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true, twentyYearsPassed: true, postMontageRedSpoken: true, mapDrawn: true, hasMap: true }); devCheckpoint("CP_FINAL_DIG"); devEnterScene("cell"); setPlayerFootToCellImage(CellLayout.pictureStandPoint.x, CellLayout.pictureStandPoint.y); GameState.currentQuest = "quest_cell_final_dig_ready";` },
+        { group: "终段", title: "最终土洞", note: "走到最右侧进入水管", code: `devSetProgress({ hasHammer: true, hasBible: true, hasLedger: true, bibleUsed: true, ledgerFound: true, ledgerSwapped: true, finalDigUnlocked: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true, twentyYearsPassed: true, postMontageRedSpoken: true, mapDrawn: true, hasMap: true }); devCheckpoint("CP_FINAL_DIG"); devEnterScene("dig"); GameState.dig.mode = "finalTunnel"; GameState.dig.playerX = FinalDigLayout.entryZone.x + FinalDigLayout.entryZone.w / 2 - GameState.dig.playerW / 2; GameState.dig.playerY = FinalDigLayout.walkRect.y; GameState.currentQuest = "quest_final_tunnel";` },
+        { group: "终段", title: "水管砸击点", note: "站到黄色交互区", code: `devSetProgress({ hasHammer: true, hasBible: true, hasLedger: true, bibleUsed: true, ledgerFound: true, ledgerSwapped: true, finalDigUnlocked: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true, twentyYearsPassed: true, postMontageRedSpoken: true, mapDrawn: true, hasMap: true }); devCheckpoint("CP_PIPE_GAME"); devEnterScene("pipe"); GameState.pipe.playerX = PipeLayout.smashZone.x + PipeLayout.smashZone.w / 2 - GameState.pipe.playerW / 2; GameState.pipe.playerY = PipeLayout.walkRect.y + 2; GameState.pipe.facing = "right"; GameState.currentQuest = "quest_pipe_tunnel";` },
+        { group: "终段", title: "水管雷声窗口", note: "只差一次砸击，可检查高亮反馈", code: `devSetProgress({ hasHammer: true, hasBible: true, hasLedger: true, bibleUsed: true, ledgerFound: true, ledgerSwapped: true, finalDigUnlocked: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true, twentyYearsPassed: true, postMontageRedSpoken: true, mapDrawn: true, hasMap: true }); devCheckpoint("CP_PIPE_GAME"); devEnterScene("pipe"); GameState.pipe.playerX = PipeLayout.smashZone.x + PipeLayout.smashZone.w / 2 - GameState.pipe.playerW / 2; GameState.pipe.playerY = PipeLayout.walkRect.y + 2; GameState.pipe.facing = "right"; GameState.pipe.phase = "smash"; GameState.pipe.smashSuccessCount = PIPE_SMASH_REQUIRED_COUNT - 1; GameState.pipe.smashCompleted = false; GameState.pipe.cueVisible = true; GameState.pipe.cueLit = true; GameState.pipe.cueTimer = 0; GameState.pipe.nextCueDelay = 999; GameState.currentQuest = "quest_pipe_tunnel";` },
+        { group: "终段", title: "水管已砸开", note: "站在掉落口，继续可进入爬行段", code: `devSetProgress({ hasHammer: true, hasBible: true, hasLedger: true, bibleUsed: true, ledgerFound: true, ledgerSwapped: true, finalDigUnlocked: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true, twentyYearsPassed: true, postMontageRedSpoken: true, mapDrawn: true, hasMap: true }); devCheckpoint("CP_PIPE_GAME"); devEnterScene("pipe"); GameState.pipe.phase = "smash"; GameState.pipe.smashSuccessCount = PIPE_SMASH_REQUIRED_COUNT; GameState.pipe.smashCompleted = true; GameState.pipe.cueVisible = false; GameState.pipe.cueLit = false; GameState.pipe.playerX = PipeLayout.dropZone.x + PipeLayout.dropZone.w / 2 - GameState.pipe.playerW / 2; GameState.pipe.playerY = PipeLayout.walkRect.y + 2; GameState.pipe.facing = "right"; GameState.currentQuest = "quest_pipe_tunnel";` },
+        { group: "终段", title: "水管爬行段", note: "已掉入管道，向右走触发逃脱", code: `devSetProgress({ hasHammer: true, hasBible: true, hasLedger: true, bibleUsed: true, ledgerFound: true, ledgerSwapped: true, finalDigUnlocked: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true, twentyYearsPassed: true, postMontageRedSpoken: true, mapDrawn: true, hasMap: true }); devCheckpoint("CP_PIPE_GAME"); devEnterScene("pipe"); GameState.pipe.smashSuccessCount = PIPE_SMASH_REQUIRED_COUNT; GameState.pipe.smashCompleted = true; GameState.pipe.playerX = PipeLayout.dropZone.x + PipeLayout.dropZone.w / 2 - GameState.pipe.playerW / 2; GameState.pipe.playerY = PipeLayout.crawlBaselineY - GameState.pipe.playerH; completePipeDropToCrawl(); GameState.pipe.playerX = PipeLayout.crawlStartX + 50; GameState.pipe.facing = "right"; GameState.currentQuest = "quest_pipe_tunnel";` },
+        { group: "结局", title: "逃脱胜利画面", note: "雨夜逃出后，按交互进入黑场", code: `devSetProgress({ hasHammer: true, hasBible: true, hasLedger: true, bibleUsed: true, ledgerFound: true, ledgerSwapped: true, finalDigUnlocked: true, redHammerDelivered: true, brooksBibleDelivered: true, inspectionPassed: true, hasAttributeC: true, twentyYearsPassed: true, postMontageRedSpoken: true, mapDrawn: true, hasMap: true }); devCheckpoint("CP_PIPE_GAME"); devEnterScene("pipe"); startPipeVictorySequence(); GameState.pipe.victoryPhase = "shown"; GameState.pipe.victoryTimer = 0; GameState.currentQuest = "quest_pipe_tunnel";` },
+        { group: "结局", title: "三结局选择页", note: "跳到正式结局入口", code: `devCheckpoint("CP_ENDING_SELECT"); document.location.assign("../三个结局/ending.html");` },
+        { group: "结局", title: "结局一", note: "直接打开第一个结局页面", code: `devCheckpoint("CP_ENDING_SELECT"); document.location.assign("../三个结局/ending1/shawshank_storyboard_interactive.html");` },
+        { group: "结局", title: "结局二", note: "直接打开第二个结局页面", code: `devCheckpoint("CP_ENDING_SELECT"); document.location.assign("../三个结局/ending2/ending2_shawshank_storyboard_interactive.html");` },
+        { group: "结局", title: "结局三", note: "直接打开第三个结局页面", code: `devCheckpoint("CP_ENDING_SELECT"); document.location.assign("../三个结局/ending3/shawshank_no_reunion_interactive_bgm.html");` }
+      ];
+      const TELEPORTS = [
+        { title: "牢房：门", note: "回劳作区入口", code: `devEnterScene("cell"); setPlayerFootToCellImage(204, 610); GameState.player.facing = "left";` },
+        { title: "牢房：床", note: "睡觉/查房/蒙太奇触发点", code: `devEnterScene("cell"); setPlayerFootToCellImage(CellLayout.bed.x + CellLayout.bed.w / 2, CellLayout.bed.y + CellLayout.bed.h - 18); GameState.player.facing = "up";` },
+        { title: "牢房：墙画", note: "第一次挖洞或最终土洞入口", code: `devEnterScene("cell"); setPlayerFootToCellImage(CellLayout.pictureStandPoint.x, CellLayout.pictureStandPoint.y); GameState.player.facing = "up";` },
+        { title: "牢房：桌子", note: "二十年后画地图", code: `devEnterScene("cell"); setPlayerFootToCellImage(620, 878); GameState.player.facing = "up";` },
+        { title: "劳作区：瑞德", note: "锤子/二十年后对话", code: `devEnterScene("yard"); setPlayerFootToYardImage(365, 700); updateYardCamera();` },
+        { title: "劳作区：老布", note: "圣经交付点", code: `devEnterScene("yard"); setPlayerFootToYardImage(1275, 238); updateYardCamera();` },
+        { title: "劳作区：撒土区", note: "长按处理小土堆", code: `devEnterScene("yard"); setPlayerFootToYardImage(820, 456); updateYardCamera();` },
+        { title: "劳作区：办公室入口", note: "需要地图旗标", code: `devEnterScene("yard"); setPlayerFootToYardImage(164, 610); updateYardCamera();` },
+        { title: "土洞：左出口", note: "返回牢房", code: `devEnterScene("dig"); GameState.dig.playerX = DigLayout.leftExitZone.x + 12; GameState.dig.playerY = DigLayout.walkRect.y + 2;` },
+        { title: "土洞：挖洞点", note: "第一次挖洞长按位置", code: `devEnterScene("dig"); GameState.dig.playerX = DigLayout.digZone.x + DigLayout.digZone.w / 2 - GameState.dig.playerW / 2; GameState.dig.playerY = DigLayout.walkRect.y + 2;` },
+        { title: "最终土洞：水管入口", note: "靠近后进水管场景", code: `devEnterScene("dig"); GameState.dig.mode = "finalTunnel"; GameState.dig.playerX = FinalDigLayout.pipeEntryZone.x + FinalDigLayout.pipeEntryZone.w / 2 - GameState.dig.playerW / 2; GameState.dig.playerY = FinalDigLayout.walkRect.y;` },
+        { title: "办公室：典狱长", note: "对话起点", code: `devEnterScene("office"); setPlayerFootToOfficeImage(760, 626);` },
+        { title: "办公室：刺绣", note: "找保险柜", code: `devEnterScene("office"); GameState.office.wardenPhase = "gone"; GameState.office.wardenX = OfficeLayout.wardenExit.x; GameState.office.wardenY = OfficeLayout.wardenExit.y; setPlayerFootToOfficeImage(166, 520);` },
+        { title: "办公室：门", note: "调包后离开", code: `devEnterScene("office"); setPlayerFootToOfficeImage(632, 1034);` },
+        { title: "水管：砸击点", note: "按住按钮砸水管", code: `devEnterScene("pipe"); GameState.pipe.playerX = PipeLayout.smashZone.x + PipeLayout.smashZone.w / 2 - GameState.pipe.playerW / 2; GameState.pipe.playerY = PipeLayout.walkRect.y + 2; GameState.pipe.facing = "right";` }
+      ];
+      const SHORTCUTS = [
+        { title: "清空对话", code: `devClearDialogue(); updateRedDialogueReward(); updateBrooksDialogueReward();` },
+        { title: "给锤子", code: `GameState.hasHammer = true; GameState.redHammerDelivered = true; devCheckpoint("CP_HAMMER_OBTAINED"); GameState.currentQuest = "quest_yard_library";` },
+        { title: "给圣经", code: `GameState.hasBible = true; GameState.brooksBibleDelivered = true; devCheckpoint("CP_BIBLE_OBTAINED"); GameState.currentQuest = "quest_yard_bible_obtained";` },
+        { title: "通过查房", code: `GameState.hasHammer = true; GameState.hasBible = true; GameState.inspectionPassed = true; GameState.hasAttributeC = true; resetCellInspectionState(); devCheckpoint("CP_INSPECTION_PASSED"); GameState.currentQuest = "quest_cell_inspection_passed";` },
+        { title: "完成第一次挖洞", code: `GameState.hasSoilPile = true; GameState.dig.digProgress = DIG_REQUIRED_SECONDS; GameState.currentQuest = "quest_dig_return"; devCheckpoint("CP_FIRST_DIG");` },
+        { title: "完成撒土", code: `GameState.hasSoilPile = false; GameState.hasAttributeD = true; GameState.soilDump.completedCount = SOIL_DUMP_REQUIRED_COUNT; resetSoilDumpHold(); devCheckpoint("CP_SOIL_DISPOSE"); GameState.currentQuest = "quest_yard_soil_done";` },
+        { title: "结束蒙太奇", code: `GameState.twentyYearsPassed = true; GameState.hasAttributeD = false; devCheckpoint("CP_SOIL_DISPOSE"); devEnterScene("cell"); GameState.currentQuest = "quest_cell_find_red_after_montage";` },
+        { title: "给地图", code: `GameState.twentyYearsPassed = true; GameState.postMontageRedSpoken = true; GameState.mapDrawn = true; GameState.hasMap = true; GameState.mapRevealActive = false; GameState.currentQuest = "quest_cell_map_obtained";` },
+        { title: "典狱长离开", code: `GameState.office.wardenPhase = "gone"; GameState.office.wardenX = OfficeLayout.wardenExit.x; GameState.office.wardenY = OfficeLayout.wardenExit.y; GameState.office.wardenMoving = false; devCheckpoint("CP_OFFICE_DIALOGUE_DONE"); GameState.currentQuest = "quest_office_embroidery";` },
+        { title: "打开保险柜", code: `GameState.office.wardenPhase = "gone"; GameState.office.embroideryChecked = true; GameState.office.safeViewOpen = true; GameState.office.safeStage = "ledgerFound"; GameState.ledgerFound = true; GameState.currentQuest = "quest_office_swap_ledger";` },
+        { title: "完成调包", code: `GameState.hasLedger = true; GameState.bibleUsed = true; GameState.ledgerFound = true; GameState.ledgerSwapped = true; GameState.finalDigUnlocked = true; GameState.hasAttributeC = true; devCheckpoint("CP_FINAL_DIG"); GameState.currentQuest = "quest_office_leave";` },
+        { title: "点亮水管窗口", code: `GameState.pipe.cueVisible = true; GameState.pipe.cueLit = true; GameState.pipe.cueTimer = 0; GameState.pipe.nextCueDelay = 999; GameState.pipe.smashWindowScored = false;` },
+        { title: "水管命中 5/5", code: `GameState.pipe.smashSuccessCount = PIPE_SMASH_REQUIRED_COUNT; GameState.pipe.smashCompleted = true; GameState.pipe.cueVisible = false; GameState.pipe.cueLit = false;` },
+        { title: "触发逃脱画面", code: `devEnterScene("pipe"); startPipeVictorySequence(); GameState.pipe.victoryPhase = "shown"; GameState.pipe.victoryTimer = 0;` },
+        { title: "打开结局选择", code: `devCheckpoint("CP_ENDING_SELECT"); document.location.assign("../三个结局/ending.html");` },
+        { title: "恢复失败循环", code: `GameState.failReason = ""; GameState.failRecovery = null; devClearDialogue(); devRestartLoop();` }
+      ];
+
+      let root = null;
+      let activePane = "progress";
+      let flagsDirty = false;
+      let sixPressTimes = [];
+      let refreshTimer = null;
+
+      function isEditableTarget(target) {
+        return target && (
+          target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable
+        );
+      }
+
+      function isSixKey(event) {
+        return event.key === "6" || event.code === "Digit6" || event.code === "Numpad6";
+      }
+
+      function createTool() {
+        root = document.createElement("div");
+        root.id = "developerTool";
+        root.tabIndex = -1;
+        root.innerHTML = `
+          <aside class="dev-sidebar">
+            <header class="dev-head">
+              <div class="dev-title-row">
+                <h1>开发者进度工具</h1>
+                <button id="devClose" class="small danger">关闭</button>
+              </div>
+              <div class="dev-status"><span id="devReadyDot" class="dev-dot"></span><span id="devReadyText">等待 GameState</span></div>
+            </header>
+            <nav class="dev-tabs" aria-label="开发者工具分页">
+              <button class="dev-tab active" data-pane="progress">进度</button>
+              <button class="dev-tab" data-pane="teleport">传送</button>
+              <button class="dev-tab" data-pane="state">状态</button>
+              <button class="dev-tab" data-pane="patch">补丁</button>
+            </nav>
+            <main class="dev-content">
+              <section id="devPane-progress" class="dev-pane active">
+                <div class="dev-section">
+                  <div class="dev-section-title"><span>主线进度预设</span><button id="devRefreshProgress" class="small">刷新</button></div>
+                  <div class="dev-section-body"><div id="devPresetList" class="dev-list"></div></div>
+                </div>
+                <div class="dev-section">
+                  <div class="dev-section-title">场景与检查点</div>
+                  <div class="dev-section-body">
+                    <div class="dev-inline"><select id="devSceneSelect"></select><button id="devSceneButton" class="primary">进入</button></div>
+                    <div class="dev-inline"><select id="devCheckpointSelect"></select><button id="devCheckpointButton">保存</button></div>
+                  </div>
+                </div>
+              </section>
+              <section id="devPane-teleport" class="dev-pane">
+                <div class="dev-section">
+                  <div class="dev-section-title">交互点传送</div>
+                  <div class="dev-section-body"><div id="devTeleportList" class="dev-list"></div></div>
+                </div>
+                <div class="dev-section">
+                  <div class="dev-section-title">当前阶段快捷动作</div>
+                  <div class="dev-section-body"><div id="devShortcutList" class="dev-grid-two"></div></div>
+                </div>
+              </section>
+              <section id="devPane-state" class="dev-pane">
+                <div class="dev-section">
+                  <div class="dev-section-title"><span>运行状态</span><button id="devRefreshState" class="small">刷新</button></div>
+                  <div class="dev-section-body"><dl id="devStateSummary" class="dev-state-grid"></dl></div>
+                </div>
+                <div class="dev-section">
+                  <div class="dev-section-title">旗标开关</div>
+                  <div class="dev-section-body"><div id="devFlagList" class="dev-flags"></div><button id="devApplyFlags" class="primary">应用旗标</button></div>
+                </div>
+              </section>
+              <section id="devPane-patch" class="dev-pane">
+                <div class="dev-section">
+                  <div class="dev-section-title">JSON 补丁</div>
+                  <div class="dev-section-body">
+                    <p class="dev-hint">深度合并到 GameState。例如只改当前位置：{"player":{"x":610,"y":450}}</p>
+                    <textarea id="devPatchText" spellcheck="false">{
+  "hasHammer": true,
+  "hasBible": true
+}</textarea>
+                    <div class="dev-grid-two"><button id="devApplyPatch" class="primary">应用 JSON</button><button id="devDumpState">填入当前状态</button></div>
+                  </div>
+                </div>
+                <div class="dev-section">
+                  <div class="dev-section-title">运行时 JS</div>
+                  <div class="dev-section-body">
+                    <textarea id="devScriptText" spellcheck="false">GameState.playTime = 0;
+GameState.currentQuest = "quest_start";</textarea>
+                    <button id="devRunScript" class="primary">运行 JS</button>
+                  </div>
+                </div>
+                <div class="dev-section">
+                  <div class="dev-section-title">调试日志</div>
+                  <div class="dev-section-body"><div id="devLog" class="dev-log"></div></div>
+                </div>
+              </section>
+            </main>
+          </aside>
+          <section class="dev-stage">
+            <div class="dev-stage-card"><strong id="devStageTitle">当前游戏运行时</strong><span id="devStageSubtitle">所有修改直接作用于当前正式页面。</span></div>
+          </section>
+        `;
+        document.body.appendChild(root);
+        root.addEventListener("pointerdown", stopGameInput, true);
+        root.addEventListener("mousedown", stopGameInput, true);
+        root.addEventListener("touchstart", stopGameInput, true);
+        bindTool();
+        renderStaticControls();
+      }
+
+      function stopGameInput(event) {
+        event.stopPropagation();
+      }
+
+      function setToolOpen(open) {
+        if (!root) {
+          createTool();
+        }
+        root.classList.toggle("dev-open", open);
+        if (open) {
+          devClearInput();
+          root.focus();
+          refreshState();
+          if (!refreshTimer) {
+            refreshTimer = window.setInterval(refreshState, REFRESH_MS);
+          }
+        } else {
+          devClearInput();
+          if (refreshTimer) {
+            window.clearInterval(refreshTimer);
+            refreshTimer = null;
+          }
+        }
+      }
+
+      function handleTrigger(event) {
+        if (root && root.classList.contains("dev-open")) {
+          if (event.key === "Escape") {
+            setToolOpen(false);
+            event.preventDefault();
+          }
+          event.stopImmediatePropagation();
+          return;
+        }
+
+        if (!isSixKey(event) || isEditableTarget(event.target)) {
+          return;
+        }
+
+        const now = Date.now();
+        sixPressTimes = sixPressTimes.filter((time) => now - time <= TRIGGER_WINDOW_MS);
+        sixPressTimes.push(now);
+        if (sixPressTimes.length >= 3) {
+          sixPressTimes = [];
+          setToolOpen(true);
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      }
+
+      function devRestartLoop() {
+        try {
+          if (typeof loopStopped !== "undefined" && loopStopped) {
+            loopStopped = false;
+            lastTimestamp = performance.now();
+            requestAnimationFrame(safeGameLoop);
+          }
+        } catch (error) {}
+      }
+
+      function devClearInput() {
+        try {
+          InputSystem.keys = Object.create(null);
+          InputSystem.pressed = Object.create(null);
+          InputSystem.pointerPressed = false;
+          InputSystem.pointerJustPressed = false;
+          InputSystem.joystick.active = false;
+          InputSystem.joystick.vectorX = 0;
+          InputSystem.joystick.vectorY = 0;
+          InputSystem.actionButton.held = false;
+          InputSystem.actionButton.justPressed = false;
+        } catch (error) {}
+      }
+
+      function devClearDialogue() {
+        try {
+          DialogueSystem.active = false;
+          DialogueSystem.lines = [];
+          DialogueSystem.index = 0;
+          DialogueSystem.justStarted = false;
+          DialogueSystem.revealTimer = 0;
+        } catch (error) {}
+      }
+
+      function devResetTransient() {
+        devRestartLoop();
+        devClearInput();
+        devClearDialogue();
+        GameState.fatalError = null;
+        GameState.failReason = "";
+        GameState.failRecovery = null;
+        GameState.redDialogueActive = false;
+        GameState.brooksDialogueActive = false;
+        GameState.postMontageRedDialogueActive = false;
+        GameState.player.lyingInBed = false;
+        GameState.player.vx = 0;
+        GameState.player.vy = 0;
+        GameState.player.isMoving = false;
+        GameState.player.walkAnimTime = 0;
+        GameState.wallHole.revealed = false;
+        GameState.wallHole.introPending = false;
+        GameState.wallHole.exitPending = false;
+        GameState.wallHole.timer = 0;
+        GameState.dig.isDigging = false;
+        GameState.dig.digAnimTime = 0;
+        GameState.dig.pipeEntryTimer = 0;
+        GameState.pipe.isSmashing = false;
+        GameState.pipe.smashAnimTime = 0;
+        GameState.soilDump.progress = 0;
+        GameState.soilDump.active = false;
+        try { resetCellInspectionState(); } catch (error) {}
+        try { resetOfficeSceneState(); } catch (error) {}
+        try { resetYardGuardsForSoilRetry(); } catch (error) {}
+        if (GameState.redNpc) {
+          GameState.redNpc.initialized = false;
+          GameState.redNpc.mode = "patrol";
+          GameState.redNpc.pendingDialogue = null;
+          GameState.redNpc.isMoving = false;
+          GameState.redNpc.walkAnimTime = 0;
+        }
+      }
+
+      function devSetProgress(flags) {
+        devResetTransient();
+        const defaults = {
+          hasHammer: false,
+          hasBible: false,
+          hasLedger: false,
+          hasSoilPile: false,
+          bibleUsed: false,
+          ledgerFound: false,
+          ledgerSwapped: false,
+          finalDigUnlocked: false,
+          inspectionPassed: false,
+          hasAttributeC: false,
+          hasAttributeD: false,
+          twentyYearsPassed: false,
+          postMontageRedSpoken: false,
+          mapRevealActive: false,
+          mapDrawn: false,
+          hasMap: false,
+          redHammerDelivered: false,
+          brooksBibleDelivered: false
+        };
+        Object.keys(defaults).forEach(function (key) {
+          GameState[key] = Object.prototype.hasOwnProperty.call(flags, key) ? flags[key] : defaults[key];
+        });
+        GameState.dig.digProgress = 0;
+        GameState.soilDump.completedCount = 0;
+        GameState.currentQuest = "quest_start";
+      }
+
+      function devCheckpoint(key) {
+        GameState.currentCheckpoint = key;
+        try {
+          localStorage.setItem("shawshank_pixel_escape_checkpoint", key);
+        } catch (error) {}
+      }
+
+      function devEnterScene(sceneName) {
+        if (!Scenes[sceneName]) {
+          throw new Error("Scene not found: " + sceneName);
+        }
+        devClearInput();
+        devClearDialogue();
+        const previous = GameState.scene;
+        if (previous !== sceneName && typeof changeScene === "function") {
+          changeScene(sceneName);
+          return;
+        }
+        GameState.previousScene = previous;
+        GameState.scene = sceneName;
+        if (Scenes[sceneName] && Scenes[sceneName].enter) {
+          Scenes[sceneName].enter();
+        }
+      }
+
+      function devMerge(target, patch) {
+        Object.keys(patch).forEach(function (key) {
+          const value = patch[key];
+          if (value && typeof value === "object" && !Array.isArray(value) && target[key] && typeof target[key] === "object" && !Array.isArray(target[key])) {
+            devMerge(target[key], value);
+          } else {
+            target[key] = value;
+          }
+        });
+        return target;
+      }
+
+      function safe(fn, fallback) {
+        try { return fn(); } catch (error) { return fallback; }
+      }
+
+      function readState() {
+        if (typeof GameState === "undefined") {
+          return { ready: false };
+        }
+        const activeInteraction = safe(function () {
+          if (GameState.scene === "cell") return getActiveCellInteraction();
+          if (GameState.scene === "yard") return getActiveYardInteraction();
+          if (GameState.scene === "office") return getActiveOfficeInteraction();
+          if (GameState.scene === "dig") return getActiveDigInteraction();
+          if (GameState.scene === "pipe") return getActivePipeInteraction();
+          return null;
+        }, null);
+        return {
+          ready: true,
+          scene: GameState.scene,
+          quest: GameState.currentQuest,
+          questText: safe(function () { return QuestSystem.getCurrentText(); }, GameState.currentQuest),
+          checkpoint: GameState.currentCheckpoint,
+          playTime: Math.round(GameState.playTime),
+          fatalError: GameState.fatalError ? String(GameState.fatalError.message || GameState.fatalError) : "",
+          failReason: GameState.failReason || "",
+          activeInteraction: activeInteraction ? activeInteraction.id : "",
+          player: { x: Math.round(GameState.player.x), y: Math.round(GameState.player.y), facing: GameState.player.facing },
+          dig: { mode: GameState.dig.mode, progress: Number(GameState.dig.digProgress || 0).toFixed(2), x: Math.round(GameState.dig.playerX || 0), y: Math.round(GameState.dig.playerY || 0) },
+          soilDump: { progress: Number(GameState.soilDump.progress || 0).toFixed(2), completedCount: GameState.soilDump.completedCount },
+          office: { wardenPhase: GameState.office.wardenPhase, safeStage: GameState.office.safeStage, safeViewOpen: GameState.office.safeViewOpen },
+          pipe: {
+            x: Math.round(GameState.pipe.playerX || 0),
+            y: Math.round(GameState.pipe.playerY || 0),
+            phase: GameState.pipe.phase,
+            hits: GameState.pipe.smashSuccessCount,
+            requiredHits: typeof PIPE_SMASH_REQUIRED_COUNT === "undefined" ? 0 : PIPE_SMASH_REQUIRED_COUNT,
+            cueVisible: GameState.pipe.cueVisible,
+            cueLit: GameState.pipe.cueLit,
+            smashCompleted: GameState.pipe.smashCompleted,
+            victoryPhase: GameState.pipe.victoryPhase
+          },
+          flags: FLAG_KEYS.reduce(function (result, key) {
+            result[key] = Boolean(GameState[key]);
+            return result;
+          }, {}),
+          raw: GameState
+        };
+      }
+
+      function runCode(label, code) {
+        try {
+          eval(code);
+          devRestartLoop();
+          log("OK " + label);
+          refreshState();
+        } catch (error) {
+          log("ERR " + label + ": " + (error && error.message ? error.message : error));
+          setReady(false, "执行失败");
+        }
+      }
+
+      function setReady(value, text) {
+        const dot = document.getElementById("devReadyDot");
+        const readyText = document.getElementById("devReadyText");
+        if (dot) dot.className = value ? "dev-dot ready" : "dev-dot";
+        if (readyText) readyText.textContent = text;
+      }
+
+      function log(message) {
+        const logBox = document.getElementById("devLog");
+        if (!logBox) return;
+        const time = new Date().toLocaleTimeString();
+        logBox.textContent = "[" + time + "] " + message + "\n" + logBox.textContent;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function renderButtonList(id, items, tagText) {
+        const list = document.getElementById(id);
+        list.innerHTML = "";
+        items.forEach(function (item) {
+          const button = document.createElement("button");
+          button.className = "dev-preset";
+          button.innerHTML = "<span><strong>" + escapeHtml(item.title) + "</strong><span>" + escapeHtml(item.note || "") + "</span></span><em class=\"dev-tag\">" + escapeHtml(tagText || item.group || "") + "</em>";
+          button.addEventListener("click", function () {
+            runCode(item.title, item.code);
+          });
+          list.appendChild(button);
+        });
+      }
+
+      function renderStaticControls() {
+        renderButtonList("devPresetList", PRESETS);
+        renderButtonList("devTeleportList", TELEPORTS, "移动");
+        const shortcutList = document.getElementById("devShortcutList");
+        shortcutList.innerHTML = "";
+        SHORTCUTS.forEach(function (item) {
+          const button = document.createElement("button");
+          button.textContent = item.title;
+          button.addEventListener("click", function () {
+            runCode(item.title, item.code);
+          });
+          shortcutList.appendChild(button);
+        });
+        document.getElementById("devSceneSelect").innerHTML = RAW_SCENES.map(function (scene) {
+          return "<option value=\"" + scene + "\">" + scene + "</option>";
+        }).join("");
+        document.getElementById("devCheckpointSelect").innerHTML = CHECKPOINTS.map(function (checkpoint) {
+          return "<option value=\"" + checkpoint + "\">" + checkpoint + "</option>";
+        }).join("");
+      }
+
+      function renderFlags(flags) {
+        if (flagsDirty) return;
+        const flagList = document.getElementById("devFlagList");
+        flagList.innerHTML = "";
+        FLAG_KEYS.forEach(function (key) {
+          const label = document.createElement("label");
+          label.className = "dev-flag";
+          label.innerHTML = "<input type=\"checkbox\" data-flag=\"" + key + "\"> <span>" + key + "</span>";
+          const input = label.querySelector("input");
+          input.checked = Boolean(flags && flags[key]);
+          input.addEventListener("change", function () {
+            flagsDirty = true;
+          });
+          flagList.appendChild(label);
+        });
+      }
+
+      function refreshState() {
+        if (!root || !root.classList.contains("dev-open")) return;
+        const state = readState();
+        if (!state.ready) {
+          setReady(false, "等待 GameState");
+          return;
+        }
+        const rows = [
+          ["scene", state.scene],
+          ["quest", state.quest],
+          ["questText", state.questText],
+          ["checkpoint", state.checkpoint],
+          ["active", state.activeInteraction || "none"],
+          ["player", state.player.x + "," + state.player.y + " / " + state.player.facing],
+          ["dig", state.dig.mode + " / " + state.dig.progress],
+          ["soil", state.soilDump.completedCount + "/3 / " + state.soilDump.progress],
+          ["office", state.office.wardenPhase + " / " + state.office.safeStage],
+          ["pipe", state.pipe.phase + " / " + state.pipe.hits + "/" + state.pipe.requiredHits + " / cue " + (state.pipe.cueLit ? "lit" : state.pipe.cueVisible ? "wait" : "off") + " / " + state.pipe.x + "," + state.pipe.y + (state.pipe.smashCompleted ? " / opened" : "") + (state.pipe.victoryPhase && state.pipe.victoryPhase !== "none" ? " / victory " + state.pipe.victoryPhase : "")],
+          ["fail", state.failReason || "none"],
+          ["playTime", state.playTime + "s"]
+        ];
+        document.getElementById("devStateSummary").innerHTML = rows.map(function (row) {
+          return "<dt>" + escapeHtml(row[0]) + "</dt><dd>" + escapeHtml(String(row[1])) + "</dd>";
+        }).join("");
+        renderFlags(state.flags);
+        document.getElementById("devStageTitle").textContent = "scene: " + state.scene + " | checkpoint: " + state.checkpoint;
+        document.getElementById("devStageSubtitle").textContent = state.questText || state.quest;
+        document.getElementById("devSceneSelect").value = state.scene;
+        document.getElementById("devCheckpointSelect").value = CHECKPOINTS.indexOf(state.checkpoint) >= 0 ? state.checkpoint : "CP_START";
+        setReady(!state.fatalError, state.fatalError ? "游戏报错：" + state.fatalError : "已连接 GameState");
+      }
+
+      function applyFlagForm() {
+        const patch = {};
+        document.querySelectorAll("#devFlagList input[data-flag]").forEach(function (input) {
+          patch[input.dataset.flag] = input.checked;
+        });
+        flagsDirty = false;
+        Object.keys(patch).forEach(function (key) {
+          GameState[key] = patch[key];
+        });
+        log("OK 应用旗标");
+        refreshState();
+      }
+
+      function applyJsonPatch() {
+        try {
+          const patch = JSON.parse(document.getElementById("devPatchText").value);
+          devMerge(GameState, patch);
+          log("OK JSON 补丁");
+          refreshState();
+        } catch (error) {
+          log("ERR JSON 格式错误: " + (error && error.message ? error.message : error));
+        }
+      }
+
+      function dumpStateToPatch() {
+        try {
+          document.getElementById("devPatchText").value = JSON.stringify(readState().raw, null, 2);
+          log("OK 已填入当前 GameState");
+        } catch (error) {
+          log("ERR 读取状态失败: " + (error && error.message ? error.message : error));
+        }
+      }
+
+      function bindTool() {
+        document.getElementById("devClose").addEventListener("click", function () { setToolOpen(false); });
+        document.querySelectorAll(".dev-tab").forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            activePane = tab.dataset.pane;
+            document.querySelectorAll(".dev-tab").forEach(function (item) {
+              item.classList.toggle("active", item === tab);
+            });
+            document.querySelectorAll(".dev-pane").forEach(function (pane) {
+              pane.classList.toggle("active", pane.id === "devPane-" + activePane);
+            });
+          });
+        });
+        document.getElementById("devRefreshProgress").addEventListener("click", refreshState);
+        document.getElementById("devRefreshState").addEventListener("click", refreshState);
+        document.getElementById("devSceneButton").addEventListener("click", function () {
+          runCode("切场景 " + document.getElementById("devSceneSelect").value, "devEnterScene(" + JSON.stringify(document.getElementById("devSceneSelect").value) + ");");
+        });
+        document.getElementById("devCheckpointButton").addEventListener("click", function () {
+          const checkpoint = document.getElementById("devCheckpointSelect").value;
+          devCheckpoint(checkpoint);
+          log("OK 保存检查点 " + checkpoint);
+          refreshState();
+        });
+        document.getElementById("devApplyFlags").addEventListener("click", applyFlagForm);
+        document.getElementById("devApplyPatch").addEventListener("click", applyJsonPatch);
+        document.getElementById("devDumpState").addEventListener("click", dumpStateToPatch);
+        document.getElementById("devRunScript").addEventListener("click", function () {
+          runCode("运行时 JS", document.getElementById("devScriptText").value);
+        });
+      }
+
+      window.addEventListener("keydown", handleTrigger, true);
+    })();
+  </script>
+</body>
+</html>

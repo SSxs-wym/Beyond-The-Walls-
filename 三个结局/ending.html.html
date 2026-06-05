@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>肖申克的救赎 - 结局选择</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      background: #000;
+      color: #f5f1e8;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 28px;
+    }
+
+    .ending-row {
+      width: min(1320px, 100%);
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .ending-card {
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 26px;
+      border: 1px solid rgba(245, 241, 232, 0.58);
+      border-radius: 6px;
+      color: inherit;
+      text-decoration: none;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.018)),
+        #050505;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 16px 40px rgba(0, 0, 0, 0.55);
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .ending-card:hover,
+    .ending-card:focus-visible {
+      transform: translateY(-5px);
+      border-color: #f5f1e8;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035)),
+        #080808;
+      outline: none;
+    }
+
+    .ending-card p {
+      margin: 0;
+      max-width: 33em;
+      font-size: clamp(18px, 1.45vw, 24px);
+      line-height: 1.9;
+      letter-spacing: 0;
+      text-align: justify;
+      text-justify: inter-ideograph;
+    }
+
+    @media (max-width: 920px) {
+      body {
+        align-items: flex-start;
+        padding: 24px 18px;
+      }
+
+      .ending-row {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      .ending-card {
+        min-height: 220px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <audio id="gameBgm" src="../shawshank_pixel_escape/audio/end_title.mp3" loop preload="auto"></audio>
+
+  <main class="ending-row" aria-label="肖申克的救赎三个结局入口">
+    <a class="ending-card" href="ending1/shawshank_storyboard_interactive.html">
+      <p>你由于含冤入狱，畏惧肖申克监狱的势力，没有举报典狱长，选择带着取出来的钱，和当年与瑞德约定的一样，在树下留了一封信，远赴墨西哥海滩……</p>
+    </a>
+
+    <a class="ending-card" href="ending2/ending2_shawshank_storyboard_interactive.html">
+      <p>你搜集了所有典狱长利用别人洗黑钱和犯罪的证据，正义的你决定不计后果举报典狱长……</p>
+    </a>
+
+    <a class="ending-card" href="ending3/shawshank_no_reunion_interactive_bgm.html">
+      <p>你经历了在监狱的多年，肉体和精神上的折磨使你无力再抗争，再关心他人，你选择隐姓埋名，独自开启自己的新生活……</p>
+    </a>
+  </main>
+  <script>
+    (function () {
+      "use strict";
+
+      var bgm = document.getElementById("gameBgm");
+      if (!bgm) {
+        return;
+      }
+      var resumeKey = "shawshank_game_bgm_time";
+      var resumeTime = 0;
+
+      try {
+        resumeTime = Number(localStorage.getItem(resumeKey)) || 0;
+      } catch (error) {
+        resumeTime = 0;
+      }
+
+      function applyResumeTime() {
+        if (resumeTime <= 0) {
+          return;
+        }
+        try {
+          bgm.currentTime = Number.isFinite(bgm.duration) && bgm.duration > 0 ?
+            resumeTime % bgm.duration :
+            resumeTime;
+        } catch (error) {
+          // Some browsers disallow seeking before metadata is ready.
+        }
+      }
+
+      function playBgm() {
+        bgm.volume = 0.5;
+        var result = bgm.play();
+        if (result && typeof result.catch === "function") {
+          result.catch(function () {});
+        }
+      }
+
+      function stopBgm() {
+        bgm.pause();
+        try {
+          bgm.currentTime = 0;
+        } catch (error) {
+          // Some browsers disallow seeking before metadata is ready.
+        }
+        try {
+          localStorage.removeItem(resumeKey);
+        } catch (error) {
+          // Local saves can be unavailable in private or restricted browser modes.
+        }
+      }
+
+      if (bgm.readyState >= 1) {
+        applyResumeTime();
+      } else {
+        bgm.addEventListener("loadedmetadata", applyResumeTime, { once: true });
+      }
+      playBgm();
+      window.addEventListener("pointerdown", playBgm, { once: true });
+      window.addEventListener("keydown", playBgm, { once: true });
+
+      document.querySelectorAll(".ending-card").forEach(function (card) {
+        card.addEventListener("click", stopBgm);
+      });
+    }());
+  </script>
+</body>
+</html>
