@@ -88,34 +88,17 @@ merged.html体验完整游戏
 
 本项目为纯前端网页小游戏，无需后端环境。
 
-### 方法一：直接打开
+### 直接打开
 
 下载项目后，直接打开：
 
 ```text
-index.html
+merged.html
 
 ```
 
 即可进入游戏。
 
-### 方法二：使用本地服务器运行
-
-也可以使用 VS Code 的 Live Server 插件，或者使用本地静态服务器运行项目。
-
-例如：
-
-```bash
-python -m http.server 8000
-
-```
-
-然后在浏览器中打开：
-
-```text
-http://localhost:8000
-
-```
 
 ## 项目结构
 
