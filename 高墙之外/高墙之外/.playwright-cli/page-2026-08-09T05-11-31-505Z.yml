@@ -1,0 +1,5 @@
+- generic [active] [ref=e1]:
+  - generic "拘禁地像素摆脱控制" [ref=e2]
+  - generic "游戏控制":
+    - button "移动摇杆" [ref=e3]
+    - button "继续" [ref=e4]

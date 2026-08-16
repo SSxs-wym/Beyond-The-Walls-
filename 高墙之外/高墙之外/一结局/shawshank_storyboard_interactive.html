@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="data:," />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="full-screen" content="yes" />
+  <meta name="x5-fullscreen" content="true" />
+  <title>第一结局 · 相逢的海滩</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --paper: #f5ead4;
+      --paper-ink: #402d1d;
+      --veil: #000;
+      --gold: #d9ad6a;
+      --blue: #7fc7ff;
+      --white: #f3ead8;
+      --caption-bg: rgba(33, 24, 16, .64);
+      --caption-border: rgba(215, 174, 113, .34);
+      --ease: cubic-bezier(.2,.8,.2,1);
+      /* 所有结局统一使用横向 16:9 画幅，便于后续共用移动端适配规则。 */
+      --ending-aspect-ratio: 16 / 9;
+      --raw-width: 100vw;
+      --raw-height: 100vh;
+      --raw-height: 100dvh;
+      --app-width: 100vw;
+      --app-height: 100vh;
+      --app-height: 100dvh;
+      --app-landscape-width: 177.777vh;
+      --app-landscape-width: 177.777dvh;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      width: var(--raw-width);
+      min-height: var(--raw-height);
+      height: var(--raw-height);
+      background: #030303;
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+      color: var(--white);
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: var(--raw-height);
+      padding: 0;
+    }
+
+    body.is-final-mode {
+      padding: 0;
+    }
+
+    #landscapeApp {
+      position: relative;
+      width: var(--app-width);
+      height: var(--app-height);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      transform-origin: center;
+    }
+
+    .stage {
+      width: min(calc(var(--app-width) - 24px), calc((var(--app-height) - 24px) * 16 / 9), 1672px);
+      max-height: calc(var(--app-height) - 24px);
+      aspect-ratio: var(--ending-aspect-ratio);
+      position: relative;
+      background: #000;
+      cursor: pointer;
+      user-select: none;
+      overflow: hidden;
+      box-shadow: 0 18px 60px rgba(0, 0, 0, .62);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .stage.is-final {
+      box-shadow: none;
+    }
+
+    .stage:focus-visible {
+      outline: 1px solid rgba(217, 173, 106, .42);
+      outline-offset: 4px;
+    }
+
+    .panel {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: transparent;
+      transition: opacity 620ms var(--ease);
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: url("../assets/ending-one/shawshank_storyboard.webp");
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+    }
+
+    .panel-1 { clip-path: polygon(0 0, 39.1% 0, 38.5% 6.8%, 37.6% 18.5%, 36.5% 31.6%, 33.4% 47.1%, 0 52.1%); }
+    .panel-2 { clip-path: polygon(0 50.2%, 33.4% 47.1%, 36.2% 61.4%, 37.9% 76.5%, 38.8% 90.8%, 39.1% 100%, 0 100%); }
+    .panel-3 { clip-path: polygon(39.1% 0, 70.6% 0, 69.7% 11.2%, 69.1% 25.4%, 68.1% 40.3%, 67% 49.5%, 35.2% 47.2%, 36.6% 37.8%, 38.2% 25%, 39.1% 12.2%); }
+    .panel-4 { clip-path: polygon(35.2% 47.2%, 67% 49.5%, 66.1% 60.3%, 65% 74.6%, 64% 89.6%, 63.2% 100%, 39.1% 100%, 38.3% 88.9%, 37% 74.2%, 35.5% 60.3%); }
+    .panel-5 { clip-path: polygon(70.6% 0, 100% 0, 100% 47.7%, 67% 51%, 68.1% 39.7%, 69.1% 25.1%, 69.7% 11.2%); }
+    .panel-6 { clip-path: polygon(67% 51%, 100% 47.7%, 100% 100%, 63.2% 100%, 64% 89.3%, 65% 74.5%, 66.1% 60.2%); }
+
+    .veil {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: var(--veil);
+      opacity: 1;
+      transition: opacity 520ms var(--ease), transform 520ms var(--ease);
+      z-index: 5;
+    }
+
+    .panel.is-revealed .veil {
+      opacity: 0;
+      transform: scale(1.04);
+      pointer-events: none;
+    }
+
+    .lock {
+      display: none;
+    }
+
+    .caption {
+      position: absolute;
+      z-index: 7;
+      max-width: min(29vw, 440px);
+      padding: clamp(10px, .95vw, 15px) clamp(13px, 1.2vw, 20px);
+      border: 1px solid var(--caption-border);
+      border-top-color: rgba(234, 199, 143, .44);
+      border-radius: 4px;
+      background:
+        linear-gradient(180deg, rgba(221, 178, 112, .12), rgba(58, 37, 20, .08)),
+        var(--caption-bg);
+      backdrop-filter: blur(4px) saturate(.95);
+      -webkit-backdrop-filter: blur(4px) saturate(.95);
+      color: var(--white);
+      font-size: clamp(12px, 1vw, 18px);
+      line-height: 1.62;
+      letter-spacing: 0;
+      text-shadow: 0 2px 6px rgba(0,0,0,.78);
+      box-shadow: 0 10px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255, 238, 204, .09);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 420ms var(--ease), transform 420ms var(--ease);
+      transition-delay: 0ms;
+      pointer-events: none;
+    }
+
+    .panel-1 .caption { left: 5%; top: 31%; max-width: 28%; }
+    .panel-2 .caption { left: 6.2%; bottom: 7.8%; max-width: 24%; }
+    .panel-3 .caption { left: 43%; top: 11.5%; max-width: 20%; }
+    .panel-4 .caption { left: 42.2%; top: 53%; max-width: 20%; }
+    .panel-5 .caption { right: 5.4%; top: 9%; max-width: 23%; }
+    .panel-6 .caption { right: 6.2%; bottom: 8.8%; max-width: 22%; }
+
+    .panel.is-current .caption {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 620ms;
+    }
+
+    .panel.is-past .caption {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .note {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 20;
+      width: min(58%, 760px);
+      transform: translate(-50%, -50%) scale(.98);
+      padding: clamp(18px, 2.2vw, 34px);
+      background: var(--paper);
+      color: var(--paper-ink);
+      border-radius: 2px;
+      box-shadow: 0 26px 80px rgba(0,0,0,.58), inset 0 0 0 1px rgba(80,45,18,.18);
+      font-family: "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+      font-size: clamp(17px, 2vw, 34px);
+      line-height: 1.7;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 520ms var(--ease), transform 520ms var(--ease);
+      transition-delay: 0ms;
+    }
+
+    .stage[data-step="2"] .note {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1) rotate(-1deg);
+      transition-delay: 620ms;
+    }
+
+    .overlay-line {
+      position: absolute;
+      z-index: 21;
+      left: 50%;
+      bottom: clamp(22px, 4vw, 64px);
+      width: min(86%, 1100px);
+      transform: translateX(-50%) translateY(16px);
+      padding: clamp(12px, 1.5vw, 22px) clamp(16px, 2vw, 30px);
+      color: #fff;
+      font-size: clamp(16px, 2.3vw, 38px);
+      line-height: 1.45;
+      text-align: center;
+      text-shadow: 0 4px 14px rgba(0,0,0,.95);
+      background:
+        linear-gradient(90deg, rgba(0,0,0,.08), rgba(0,0,0,.62), rgba(0,0,0,.08));
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 520ms var(--ease), transform 520ms var(--ease);
+      transition-delay: 0ms;
+    }
+
+    .stage[data-step="4"] .os,
+    .stage[data-step="6"] .ending {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      transition-delay: 1250ms;
+    }
+
+    .hint {
+      position: absolute;
+      z-index: 30;
+      right: clamp(10px, 1.4vw, 22px);
+      top: clamp(10px, 1.4vw, 22px);
+      padding: 7px 11px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.52);
+      color: rgba(255,255,255,.72);
+      font-size: clamp(11px, .9vw, 14px);
+      line-height: 1;
+      opacity: .9;
+    }
+
+    .stage.is-final .panel,
+    .stage.is-final .note,
+    .stage.is-final .overlay-line,
+    .stage.is-final .hint {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .final-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 60;
+      display: grid;
+      place-items: center;
+      padding: clamp(22px, 5vw, 72px);
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 720ms var(--ease);
+    }
+
+    .final-screen::before {
+      content: "";
+      position: absolute;
+      inset:
+        max(14px, env(safe-area-inset-top))
+        max(14px, env(safe-area-inset-right))
+        max(14px, env(safe-area-inset-bottom))
+        max(14px, env(safe-area-inset-left));
+      border: 1px solid rgba(192, 170, 126, .52);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.025);
+      pointer-events: none;
+    }
+
+    .stage.is-final .final-screen {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .ending-title {
+      position: absolute;
+      right: max(7%, calc(env(safe-area-inset-right) + 34px));
+      top: max(11%, calc(env(safe-area-inset-top) + 30px));
+      color: #c9ae78;
+      font-family: "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+      font-size: clamp(17px, 2vw, 30px);
+      line-height: 1.5;
+      letter-spacing: .08em;
+      text-shadow: 0 0 18px rgba(201, 174, 120, .16);
+      white-space: nowrap;
+    }
+
+    .typewriter {
+      width: min(72%, 980px);
+      min-height: 5.8em;
+      color: #f7f1e5;
+      font-family: "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+      font-size: clamp(22px, 3.2vw, 46px);
+      line-height: 1.8;
+      text-align: center;
+      letter-spacing: 0;
+      text-shadow: 0 0 22px rgba(247, 241, 229, .24);
+      white-space: pre-wrap;
+    }
+
+    .final-replay {
+      position: absolute;
+      left: max(6%, calc(env(safe-area-inset-left) + 30px));
+      bottom: max(9%, calc(env(safe-area-inset-bottom) + 26px));
+      color: rgba(211, 196, 164, .66);
+      font-family: "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+      font-size: clamp(13px, 1.35vw, 20px);
+      letter-spacing: .12em;
+    }
+
+    .typewriter::after {
+      content: "";
+      display: inline-block;
+      width: .08em;
+      height: 1.05em;
+      margin-left: .12em;
+      vertical-align: -.14em;
+      background: rgba(247, 241, 229, .9);
+      animation: caretBlink 840ms steps(1) infinite;
+    }
+
+    .typewriter.is-done::after {
+      opacity: 0;
+      animation: none;
+    }
+
+    .escape-style-reveal {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      padding:
+        max(12px, env(safe-area-inset-top))
+        max(12px, env(safe-area-inset-right))
+        max(12px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+      overflow: hidden;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 700ms ease;
+    }
+    .escape-style-reveal.show { opacity: 1; pointer-events: auto; }
+    .escape-style-reveal img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: 760px;
+      min-width: 0;
+      min-height: 0;
+      object-fit: contain;
+      object-position: center;
+      filter: drop-shadow(0 12px 30px rgba(0,0,0,.58));
+    }
+
+    @keyframes caretBlink {
+      50% { opacity: 0; }
+    }
+
+    @media (max-width: 720px) {
+      body { padding: 8px; }
+      .stage { width: calc(100vw - 16px); }
+      .caption { padding: 7px 9px; font-size: 10px; border-radius: 4px; }
+      .note { width: 76%; }
+      .overlay-line { bottom: 12px; width: 92%; }
+      .typewriter { width: 92%; min-height: 7.2em; font-size: 22px; }
+      .hint { display: none; }
+    }
+
+    @media (max-height: 600px) {
+      body {
+        min-height: var(--app-height);
+        padding:
+          max(4px, env(safe-area-inset-top))
+          max(4px, env(safe-area-inset-right))
+          max(4px, env(safe-area-inset-bottom))
+          max(4px, env(safe-area-inset-left));
+      }
+
+      .stage {
+        width: min(calc(var(--app-width) - 8px), calc((var(--app-height) - 8px) * 16 / 9), 1672px);
+        max-height: calc(var(--app-height) - 8px);
+      }
+
+      .caption {
+        padding: 5px 7px;
+        font-size: clamp(9px, 2.3dvh, 13px);
+        line-height: 1.42;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+
+      .note {
+        width: 70%;
+        padding: 12px 16px;
+        font-size: clamp(13px, 3.2dvh, 20px);
+        line-height: 1.48;
+      }
+
+      .overlay-line {
+        bottom: max(8px, env(safe-area-inset-bottom));
+        width: 84%;
+        padding: 7px 12px;
+        font-size: clamp(13px, 3.7dvh, 22px);
+      }
+
+      .hint {
+        right: max(6px, env(safe-area-inset-right));
+        top: max(6px, env(safe-area-inset-top));
+        padding: 4px 7px;
+        font-size: 10px;
+      }
+
+      .final-screen { padding: 18px 34px; }
+      .final-screen::before {
+        inset:
+          max(7px, env(safe-area-inset-top))
+          max(7px, env(safe-area-inset-right))
+          max(7px, env(safe-area-inset-bottom))
+          max(7px, env(safe-area-inset-left));
+      }
+      .ending-title {
+        right: max(6vw, calc(env(safe-area-inset-right) + 18px));
+        top: max(7vh, calc(env(safe-area-inset-top) + 12px));
+        font-size: clamp(14px, 4.1dvh, 22px);
+      }
+      .typewriter {
+        width: 70%;
+        min-height: 4.8em;
+        font-size: clamp(17px, 5.2dvh, 31px);
+        line-height: 1.65;
+      }
+      .final-replay {
+        left: max(5vw, calc(env(safe-area-inset-left) + 16px));
+        bottom: max(6vh, calc(env(safe-area-inset-bottom) + 10px));
+        font-size: clamp(11px, 3dvh, 16px);
+      }
+
+    }
+
+    .oak-game-overlay {
+      position: fixed;
+      inset: 0;
+      width: var(--app-width);
+      height: var(--app-height);
+      z-index: 100;
+      display: none;
+      place-items: center;
+      background: #030403;
+    }
+
+    .oak-game-overlay.is-active { display: grid; }
+
+    .oak-game-frame {
+      display: block;
+      width: min(var(--app-width), var(--app-landscape-width));
+      max-height: var(--app-height);
+      aspect-ratio: 16 / 9;
+      border: 0;
+      background: #050705;
+    }
+
+    @media (max-height: 600px) {
+      .oak-game-overlay {
+        height: var(--app-height);
+        padding:
+          env(safe-area-inset-top)
+          env(safe-area-inset-right)
+          env(safe-area-inset-bottom)
+          env(safe-area-inset-left);
+      }
+
+      .oak-game-frame {
+        width: min(var(--app-width), var(--app-landscape-width));
+        max-height: var(--app-height);
+      }
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgm" src="../assets/ending-one/shawshank_bgm.m4a" preload="auto" loop></audio>
+  <div id="landscapeApp">
+  <div class="oak-game-overlay" id="oakGameOverlay" aria-hidden="true">
+    <div class="oak-game-frame" id="oakGameHost" role="application" aria-label="瑞德寻找橡树"></div>
+  </div>
+  <div class="oak-game-overlay" id="routeGameOverlay" aria-hidden="true">
+    <div class="oak-game-frame" id="routeGameHost" role="application" aria-label="瑞德驾车前往边境"></div>
+  </div>
+  <main class="stage" id="stage" data-step="1" tabindex="0" aria-label="点击推进瑞德与安迪的六幕分镜">
+    <section class="panel panel-1" data-scene="1">
+      <div class="veil"><div class="lock">1</div></div>
+      <div class="caption">瑞德循着安迪留下的指引，找到了那颗橡树。</div>
+    </section>
+    <section class="panel panel-2" data-scene="2">
+      <div class="veil"><div class="lock">2</div></div>
+      <div class="caption">打开信纸。</div>
+    </section>
+    <section class="panel panel-3" data-scene="3">
+      <div class="veil"><div class="lock">3</div></div>
+      <div class="caption">瑞德乘坐巴士驶离边境小镇，前方是安迪说的“没有记忆的温暖的地方。”</div>
+    </section>
+    <section class="panel panel-4" data-scene="4">
+      <div class="veil"><div class="lock">4</div></div>
+      <div class="caption">瑞德望着倒退的树影——他终于违背了不得离开的约定，跨越边境去赴约……</div>
+    </section>
+    <section class="panel panel-5" data-scene="5">
+      <div class="veil"><div class="lock">5</div></div>
+      <div class="caption">瑞德站在墨西哥的沙滩上，露出了前所未有的笑容——他终于只是瑞德，不再是拘禁地的30265号。</div>
+    </section>
+    <section class="panel panel-6" data-scene="6">
+      <div class="veil"><div class="lock">6</div></div>
+      <div class="caption">在温暖的阳光下，在这片没有记忆的海滩，安迪等到了老友瑞德的到来……</div>
+    </section>
+
+    <div class="note" aria-hidden="true">安迪：“我需要一个好人帮我实现计划，希望是件好东西，也许是世界上最好的东西，好东西永远不会消逝。”</div>
+    <div class="overlay-line os">希望太平洋的海水和我梦中的一样蓝……</div>
+    <div class="overlay-line ending">二人在海边相遇，携手开启了新的自由……</div>
+    <div class="hint">点击画面 / 空格键推进</div>
+    <div class="final-screen" aria-hidden="true">
+      <div class="ending-title">第一结局 ·《相逢的海滩》</div>
+      <div class="typewriter" id="typewriter" data-text="你与瑞德在这片没有记忆的海滩享受着一切温馨美好，而你也将带着这份美好，去经营你自己的人生……"></div>
+      <div class="final-replay">点击画面重新播放</div>
+      <div class="escape-style-reveal" id="escapeStyleReveal" aria-hidden="true">
+        <img id="escapeStyleImage" alt="你的脱困风格" />
+      </div>
+    </div>
+  </main>
+  </div>
+
+    <script src="../shared/global-controls.js"></script>
+  <script src="../shared/ending-thanks.js?v=8.9-thanks2"></script>
+  <script src="./ending-one-games.js"></script>
+  <script>
+    const stage = document.getElementById('stage');
+    const bgm = document.getElementById('bgm');
+    bgm.loop = true;
+    const finalScreen = document.querySelector('.final-screen');
+    const typewriter = document.getElementById('typewriter');
+    const escapeStyleReveal = document.getElementById('escapeStyleReveal');
+    const escapeStyleImage = document.getElementById('escapeStyleImage');
+    const escapeStyleImages = ['../四张图片/01_Insight.webp', '../四张图片/02_Action.webp', '../四张图片/03_Intuition.webp', '../四张图片/04_Perception.webp'];
+    const panels = Array.from(document.querySelectorAll('.panel'));
+    const finalText = '接下来是你的脱困风格';
+    const maxStep = 7;
+    const stepParam = new URLSearchParams(window.location.search).get('step');
+    const requestedStep = stepParam === null ? 0 : Number(stepParam);
+    let step = Number.isInteger(requestedStep) && requestedStep >= 0 && requestedStep <= 7 ? requestedStep : 0;
+    const oakGameOverlay = document.getElementById('oakGameOverlay');
+    const oakGameHost = document.getElementById('oakGameHost');
+    const routeGameOverlay = document.getElementById('routeGameOverlay');
+    const routeGameHost = document.getElementById('routeGameHost');
+    let activeGame = null;
+    let globalControls = null;
+    let endingThanks = null;
+    let typingTimer = 0;
+    let hasStartedAudio = false;
+    let endingPhase = 'idle';
+    let styleShownAt = 0;
+
+
+    function syncViewport() {
+      const viewport = window.visualViewport;
+      const rawWidth = Math.round(viewport?.width || window.innerWidth || document.documentElement.clientWidth);
+      const rawHeight = Math.round(viewport?.height || window.innerHeight || document.documentElement.clientHeight);
+      document.documentElement.style.setProperty('--raw-width', `${rawWidth}px`);
+      document.documentElement.style.setProperty('--raw-height', `${rawHeight}px`);
+      document.documentElement.style.setProperty('--app-width', `${rawWidth}px`);
+      document.documentElement.style.setProperty('--app-height', `${rawHeight}px`);
+      document.documentElement.style.setProperty('--app-landscape-width', `${Math.round(rawHeight * 16 / 9)}px`);
+    }
+
+    function scheduleViewportSync() {
+      syncViewport();
+      window.requestAnimationFrame(syncViewport);
+      window.setTimeout(syncViewport, 100);
+      window.setTimeout(syncViewport, 360);
+    }
+
+    syncViewport();
+    window.addEventListener('resize', scheduleViewportSync, { passive: true });
+    window.addEventListener('orientationchange', scheduleViewportSync, { passive: true });
+    window.visualViewport?.addEventListener('resize', scheduleViewportSync, { passive: true });
+
+    function playBgm() {
+      if (hasStartedAudio) return;
+      hasStartedAudio = true;
+      bgm.volume = 0.72;
+      bgm.play().catch(() => {
+        hasStartedAudio = false;
+      });
+    }
+
+    function stopTypewriter() {
+      window.clearTimeout(typingTimer);
+      typewriter.textContent = '';
+      typewriter.classList.remove('is-done');
+      finalScreen.setAttribute('aria-hidden', 'true');
+      escapeStyleReveal.classList.remove('show');
+      escapeStyleReveal.setAttribute('aria-hidden', 'true');
+      endingPhase = 'idle';
+      styleShownAt = 0;
+    }
+
+    function showEscapeStyle() {
+      if (endingPhase === 'style' || endingPhase === 'thanks') return;
+      window.clearTimeout(typingTimer);
+      typewriter.textContent = finalText;
+      typewriter.classList.add('is-done');
+      if (!escapeStyleImage.getAttribute('src')) {
+        escapeStyleImage.src = escapeStyleImages[Math.floor(Math.random() * escapeStyleImages.length)];
+      }
+      escapeStyleReveal.classList.add('show');
+      escapeStyleReveal.setAttribute('aria-hidden', 'false');
+      endingPhase = 'style';
+      styleShownAt = performance.now();
+      if (globalControls) globalControls.setContext(storyControlContext());
+    }
+
+    function startThanks(force) {
+      if (!endingThanks || endingThanks.isActive()) return;
+      if (!force && performance.now() - styleShownAt < 520) return;
+      endingPhase = 'thanks';
+      escapeStyleReveal.classList.remove('show');
+      escapeStyleReveal.setAttribute('aria-hidden', 'true');
+      endingThanks.start();
+      if (globalControls) globalControls.setContext(storyControlContext());
+    }
+
+    function startTypewriter() {
+      window.clearTimeout(typingTimer);
+      typewriter.textContent = '';
+      typewriter.classList.remove('is-done');
+      finalScreen.setAttribute('aria-hidden', 'false');
+      endingPhase = 'typing';
+      styleShownAt = 0;
+
+      let index = 0;
+      function typeNext() {
+        typewriter.textContent = finalText.slice(0, index);
+        if (index >= finalText.length) {
+          showEscapeStyle();
+          return;
+        }
+        index += 1;
+        typingTimer = window.setTimeout(typeNext, finalText[index - 1] === '，' ? 230 : 92);
+      }
+
+      typingTimer = window.setTimeout(typeNext, 620);
+    }
+
+    function render() {
+      stage.dataset.step = String(step);
+      stage.classList.toggle('is-final', step === maxStep);
+      document.body.classList.toggle('is-final-mode', step === maxStep);
+      if (!activeGame && globalControls) globalControls.setContext(storyControlContext());
+      panels.forEach((panel) => {
+        const scene = Number(panel.dataset.scene);
+        panel.classList.toggle('is-revealed', scene <= step);
+        panel.classList.toggle('is-current', scene === step);
+        panel.classList.toggle('is-past', scene < step);
+      });
+
+      if (step === maxStep) {
+        startTypewriter();
+      } else {
+        stopTypewriter();
+      }
+    }
+
+    function advance() {
+      playBgm();
+      if (endingThanks?.isActive()) {
+        endingThanks.advance();
+        return;
+      }
+      if (step >= maxStep) {
+        if (endingPhase === 'typing') {
+          showEscapeStyle();
+        } else if (endingPhase === 'style') {
+          startThanks(false);
+        }
+        return;
+      }
+      if (step === 1) { openGame('oak'); return; }
+      if (step === 4) { openGame('route'); return; }
+      step += 1;
+      render();
+    }
+
+    function storyControlContext() {
+      const thanksState = endingThanks?.getControlState();
+      if (thanksState?.active) {
+        return {
+          controlsVisible: true,
+          joystickVisible: false,
+          actionVisible: thanksState.actionVisible,
+          actionEnabled: thanksState.actionEnabled,
+          actionLabel: thanksState.actionLabel,
+          actionHighlighted: thanksState.actionEnabled
+        };
+      }
+      const isFinal = step >= maxStep;
+      return {
+        controlsVisible: true,
+        joystickVisible: false,
+        actionVisible: true,
+        actionEnabled: true,
+        actionLabel: isFinal ? (endingPhase === 'typing' ? '显示结果' : '继续') : '继续',
+        actionHighlighted: true
+      };
+    }
+
+    function setStoryAdapter() {
+      globalControls.setAdapter({
+        onMove() {},
+        onActionDown() { advance(); },
+        onActionUp() {}
+      });
+      globalControls.setContext(storyControlContext());
+    }
+
+    function finishGame(kind) {
+      if (activeGame) activeGame.destroy();
+      activeGame = null;
+      const overlay = kind === 'oak' ? oakGameOverlay : routeGameOverlay;
+      const host = kind === 'oak' ? oakGameHost : routeGameHost;
+      overlay.classList.remove('is-active');
+      overlay.setAttribute('aria-hidden', 'true');
+      host.replaceChildren();
+      step = kind === 'oak' ? 2 : 5;
+      render();
+      setStoryAdapter();
+      stage.focus();
+    }
+
+    function openGame(kind) {
+      const isOak = kind === 'oak';
+      const overlay = isOak ? oakGameOverlay : routeGameOverlay;
+      const host = isOak ? oakGameHost : routeGameHost;
+      overlay.classList.add('is-active');
+      overlay.setAttribute('aria-hidden', 'false');
+      const mount = isOak ? window.BeyondWallsEndingOneGames.mountOak : window.BeyondWallsEndingOneGames.mountRoute;
+      activeGame = mount(host, {
+        embedded: true,
+        onContext(context) { globalControls.setContext(context); },
+        onComplete() { finishGame(kind); }
+      });
+      globalControls.setAdapter({
+        onMove(payload) { activeGame?.setMove(payload); },
+        onActionDown() { activeGame?.actionDown(); },
+        onActionUp() { activeGame?.actionUp(); }
+      });
+    }
+
+    function relayKeyboard(event) {
+      const key = typeof event.key === 'string' ? event.key.toLowerCase() : '';
+      if (!['w', 'a', 's', 'd', ' '].includes(key)) return;
+      if (activeGame) {
+        if (event.type === 'keydown') activeGame.keyDown(key, event.repeat);
+        else activeGame.keyUp(key);
+      } else if (event.type === 'keydown' && key === ' ' && !event.repeat) {
+        advance();
+      }
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    globalControls = window.BeyondWallsControls.mount();
+    endingThanks = window.BeyondWallsEndingThanks.mount({
+      audio: bgm,
+      onStateChange() {
+        if (globalControls) globalControls.setContext(storyControlContext());
+      }
+    });
+    setStoryAdapter();
+    window.addEventListener('keydown', relayKeyboard, true);
+    window.addEventListener('keyup', relayKeyboard, true);
+    stage.addEventListener('click', advance);
+    window.addEventListener('pagehide', () => {
+      if (activeGame) activeGame.destroy();
+      endingThanks.destroy();
+      globalControls.destroy();
+    }, { once: true });
+    window.__endingOneTest = {
+      state() { return { step, endingPhase, thanksPage: endingThanks.getPageIndex(), activeGame: activeGame ? activeGame.getState() : null }; },
+      openOak() { if (!activeGame) openGame('oak'); },
+      openRoute() { if (!activeGame) openGame('route'); },
+      move(x, y) { if (activeGame) activeGame.setMove({ x, y }); },
+      showThanks() {
+        step = maxStep;
+        render();
+        showEscapeStyle();
+        startThanks(true);
+      }
+    };
+    render();
+  </script>
+</body>
+</html>

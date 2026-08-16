@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" href="data:,">
+  <base href="./shawshank_pixel_escape/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>高墙之外</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+      width: 100%;
+      height: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      touch-action: none;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #game {
+      display: block;
+      width: min(100vw, calc(100vh * 16 / 9));
+      height: min(100vh, calc(100vw * 9 / 16));
+      background: #000;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* 二十年蒙太奇：合并自第一章四幕漫画，作为互动空间内演出层。 */
+    #twentyYearsComic {
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      display: none;
+      overflow: hidden;
+      background: #050403;
+      color: #f4eddf;
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+      isolation: isolate;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    #twentyYearsComic.is-open {
+      display: block;
+    }
+
+    #twentyYearsComic .comic-stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      outline: none;
+    }
+
+    #twentyYearsComic.is-finished .comic-stage {
+      cursor: pointer;
+    }
+
+    #twentyYearsComic .comic-shot {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 480ms ease;
+    }
+
+    #twentyYearsComic .comic-shot.is-active {
+      z-index: 2;
+      opacity: 1;
+    }
+
+    #twentyYearsComic .comic-shot.is-leaving {
+      z-index: 1;
+      opacity: 0;
+    }
+
+    #twentyYearsComic .comic-visual {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #080604;
+    }
+
+    #twentyYearsComic .comic-pixel-layer,
+    #twentyYearsComic .comic-detail-layer {
+      position: absolute;
+      inset: -1.5%;
+      width: 103%;
+      height: 103%;
+      object-fit: cover;
+      transform: scale(1.03);
+      transform-origin: center;
+    }
+
+    #twentyYearsComic .comic-pixel-layer {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    #twentyYearsComic .comic-detail-layer {
+      opacity: .18;
+    }
+
+    #twentyYearsComic .comic-shot.is-active .comic-pixel-layer,
+    #twentyYearsComic .comic-shot.is-active .comic-detail-layer {
+      animation: comicSlowPush 3s linear forwards;
+    }
+
+    #twentyYearsComic .comic-shot.is-finished .comic-pixel-layer,
+    #twentyYearsComic .comic-shot.is-finished .comic-detail-layer {
+      transform: scale(1);
+      animation: none;
+    }
+
+    @keyframes comicSlowPush {
+      from { transform: scale(1.03); }
+      to { transform: scale(1); }
+    }
+
+    #twentyYearsComic .comic-grain {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      opacity: .07;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(255,226,175,.7) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 75% 68%, rgba(20,12,7,.9) 0 1px, transparent 1.5px);
+      background-size: 11px 13px, 17px 19px;
+      mix-blend-mode: soft-light;
+    }
+
+    #twentyYearsComic .comic-caption {
+      position: absolute;
+      z-index: 5;
+      width: min(660px, calc(100vw - 48px));
+      color: #f4eddf;
+      text-shadow:
+        0 2px 3px rgba(0,0,0,.98),
+        0 4px 14px rgba(0,0,0,.92);
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    #twentyYearsComic .comic-caption.bottom-left {
+      left: clamp(24px, 4.3vw, 82px);
+      bottom: clamp(42px, 8vh, 96px);
+    }
+
+    #twentyYearsComic .comic-caption.top-left {
+      left: clamp(24px, 4.3vw, 82px);
+      top: clamp(52px, 11vh, 118px);
+    }
+
+    #twentyYearsComic .comic-caption p {
+      margin: 0;
+      font-size: clamp(20px, 1.7vw, 31px);
+      font-weight: 600;
+      line-height: 1.55;
+      text-wrap: balance;
+    }
+
+    #twentyYearsComic .comic-shot.is-active .comic-caption {
+      animation: comicTextIn 450ms ease .48s forwards;
+    }
+
+    #twentyYearsComic .comic-continue-hint {
+      position: absolute;
+      z-index: 10;
+      right: clamp(20px, 3vw, 56px);
+      bottom: clamp(24px, 5vh, 58px);
+      margin: 0;
+      padding: 10px 16px;
+      border: 1px solid rgba(151, 116, 66, .7);
+      border-radius: 3px;
+      background: rgba(12, 9, 6, .72);
+      color: #eee5d4;
+      font-size: clamp(13px, .95vw, 17px);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+    }
+
+    #twentyYearsComic.is-finished .comic-continue-hint {
+      animation: comicTextIn 420ms ease forwards;
+    }
+
+    @keyframes comicTextIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 600px) {
+      #twentyYearsComic .comic-caption.bottom-left {
+        left: 20px;
+        bottom: 30px;
+      }
+
+      #twentyYearsComic .comic-caption.top-left {
+        left: 20px;
+        top: 38px;
+      }
+
+      #twentyYearsComic .comic-caption {
+        width: calc(100vw - 40px);
+      }
+
+      #twentyYearsComic .comic-caption p {
+        font-size: clamp(18px, 5.25vw, 23px);
+      }
+
+      #twentyYearsComic .comic-continue-hint {
+        right: 18px;
+        bottom: 20px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #twentyYearsComic .comic-shot,
+      #twentyYearsComic .comic-pixel-layer,
+      #twentyYearsComic .comic-detail-layer,
+      #twentyYearsComic .comic-caption,
+      #twentyYearsComic .comic-continue-hint {
+        animation-duration: 1ms !important;
+        transition-duration: 1ms !important;
+      }
+    }
+
+    #miniGameOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.92);
+      touch-action: auto;
+    }
+
+    #miniGameOverlay.is-open {
+      display: flex;
+    }
+
+    #endingFrame {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    #miniGameShell {
+      box-sizing: border-box;
+      width: min(960px, 100%);
+      height: min(720px, 100%);
+      overflow: hidden;
+      border: 1px solid rgba(216, 180, 93, 0.72);
+      border-radius: 12px;
+      background: #090807;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.62);
+    }
+
+    #miniGameShell.is-fixed-ratio {
+      width: auto;
+      height: min(720px, 100%);
+      aspect-ratio: 4 / 3;
+    }
+
+    #miniGameShell.is-full-page {
+      width: 100%;
+      height: 100%;
+      aspect-ratio: auto;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    @media (max-aspect-ratio: 4 / 3) {
+      #miniGameShell.is-fixed-ratio {
+        width: min(960px, 100%);
+        height: auto;
+      }
+    }
+
+    #miniGameViewport {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #090807;
+    }
+
+    #tutorialOverlay {
+      position: fixed;
+      z-index: 115;
+      inset: 0;
+      display: block;
+      overflow: hidden;
+      color: #f5ead0;
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #tutorialOverlay[hidden] { display: none; }
+    .tutorial-scrim {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .tutorial-focus {
+      position: fixed;
+      box-sizing: border-box;
+      display: none;
+      border: 3px solid #ffe277;
+      border-radius: 22px;
+      box-shadow:
+        0 0 0 2px rgba(65, 40, 10, .9),
+        0 0 24px rgba(255, 216, 94, .96),
+        inset 0 0 20px rgba(255, 224, 119, .18);
+      animation: tutorialFocusPulse 1.35s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    .tutorial-focus.is-round { border-radius: 50%; }
+    .tutorial-card {
+      position: fixed;
+      left: 50%;
+      top: 43%;
+      box-sizing: border-box;
+      width: min(660px, calc(100vw - 36px));
+      padding: 22px 26px 20px;
+      transform: translate(-50%, -50%);
+      border: 2px solid #b9954e;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(42, 34, 23, .98), rgba(19, 17, 13, .98));
+      box-shadow: 0 18px 58px rgba(0, 0, 0, .72);
+      text-align: left;
+      pointer-events: none;
+    }
+    #tutorialOverlay.is-map .tutorial-card {
+      top: 42%;
+      width: min(620px, calc(100vw - 36px));
+    }
+    .tutorial-kicker {
+      margin: 0 0 5px;
+      color: #d8b45d;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .18em;
+    }
+    .tutorial-card h2 {
+      margin: 0 0 13px;
+      color: #ffe39a;
+      font-size: clamp(22px, 2.3vw, 30px);
+      line-height: 1.2;
+    }
+    .tutorial-body {
+      color: #f2ead8;
+      font-size: clamp(15px, 1.55vw, 19px);
+      line-height: 1.65;
+    }
+    .tutorial-body p { margin: 8px 0; }
+    .tutorial-body strong { color: #ffe277; }
+    .tutorial-hint {
+      margin: 13px 0 0;
+      color: #d8c9aa;
+      font-size: clamp(14px, 1.35vw, 17px);
+      line-height: 1.5;
+    }
+    #tutorialContinueButton {
+      display: block;
+      min-width: 164px;
+      min-height: 46px;
+      margin: 18px auto 0;
+      border: 2px solid #ecd184;
+      border-radius: 7px;
+      background: #7a622f;
+      color: #fff1c4;
+      padding: 9px 24px;
+      font: 700 17px/1.2 inherit;
+      box-shadow: 0 5px 16px rgba(0, 0, 0, .35);
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    #tutorialContinueButton[hidden] { display: none; }
+    #tutorialContinueButton:hover,
+    #tutorialContinueButton:focus-visible {
+      border-color: #fff0b4;
+      background: #92763a;
+      outline: 3px solid rgba(255, 226, 119, .34);
+      outline-offset: 2px;
+    }
+    @keyframes tutorialFocusPulse {
+      from { opacity: .78; transform: scale(.985); }
+      to { opacity: 1; transform: scale(1.015); }
+    }
+    @media (max-height: 540px) {
+      .tutorial-card,
+      #tutorialOverlay.is-map .tutorial-card {
+        top: 39%;
+        width: min(690px, calc(100vw - 210px));
+        padding: 13px 19px 12px;
+      }
+      .tutorial-kicker { margin-bottom: 2px; font-size: 11px; }
+      .tutorial-card h2 { margin-bottom: 6px; font-size: 20px; }
+      .tutorial-body { font-size: 14px; line-height: 1.4; }
+      .tutorial-body p { margin: 4px 0; }
+      .tutorial-hint { margin-top: 7px; font-size: 13px; }
+      #tutorialContinueButton {
+        min-height: 38px;
+        margin-top: 9px;
+        padding: 6px 18px;
+        font-size: 14px;
+      }
+    }
+    @media (max-width: 680px) and (min-height: 541px) {
+      .tutorial-card,
+      #tutorialOverlay.is-map .tutorial-card {
+        top: 42%;
+        padding: 18px 20px 17px;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tutorial-focus { animation: none; }
+    }
+
+    .mini-game-component-host {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+
+
+    #developerPanel {
+      position: fixed;
+      z-index: 120;
+      inset: 0;
+      display: none;
+      justify-content: flex-end;
+      background: rgba(0, 0, 0, 0.58);
+      color: #f5f0e5;
+      font-family: system-ui, "Microsoft YaHei", "PingFang SC", sans-serif;
+      touch-action: manipulation;
+    }
+    #developerPanel.is-open { display: flex; }
+    #developerPanel[aria-hidden="true"] { visibility: hidden; }
+    #developerDrawer {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      width: min(480px, 100%);
+      min-height: 0;
+      background: #151719;
+      box-shadow: -18px 0 50px rgba(0, 0, 0, 0.5);
+    }
+    .developer-head, .developer-footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #373b3f;
+    }
+    .developer-head h1 { flex: 1; margin: 0; font-size: 17px; }
+    .developer-footer { justify-content: space-between; border-top: 1px solid #373b3f; border-bottom: 0; }
+    .developer-status {
+      margin: 0;
+      padding: 10px 16px;
+      border-bottom: 1px solid #373b3f;
+      color: #c6c0b4;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    #developerNodeList { min-height: 0; overflow-y: auto; padding: 12px; }
+    .developer-group { margin: 0 0 16px; }
+    .developer-group h2 { margin: 0 0 8px; color: #d8b45d; font-size: 13px; }
+    .developer-node {
+      display: block;
+      width: 100%;
+      margin: 0 0 8px;
+      border: 1px solid #3b4045;
+      border-radius: 9px;
+      background: #202428;
+      color: inherit;
+      padding: 11px 12px;
+      text-align: left;
+    }
+    .developer-node.is-selected { border-color: #d8b45d; background: #332d20; }
+    .developer-node strong, .developer-node span { display: block; }
+    .developer-node span { margin-top: 4px; color: #c6c0b4; font-size: 12px; line-height: 1.4; }
+    #developerPanel button {
+      min-height: 38px;
+      border: 1px solid #4b5056;
+      border-radius: 8px;
+      background: #292d31;
+      color: inherit;
+      padding: 7px 10px;
+      font: inherit;
+    }
+    #developerPanel button:hover, #developerPanel button:focus-visible { border-color: #d8b45d; outline: none; }
+    #developerJumpButton {
+      border-color: #8e7338 !important;
+      background: #3b3320 !important;
+      color: #ffe4a3 !important;
+      font-weight: 700;
+    }
+    @media (max-width: 600px) { #developerDrawer { width: 100%; } }
+
+  </style>
+</head>
+<body>
+  <canvas id="game" width="1280" height="720" tabindex="-1" aria-label="黑墙庄园像素摆脱控制"></canvas>
+  <section id="tutorialOverlay" hidden aria-hidden="true" aria-label="新手教程">
+    <svg class="tutorial-scrim" aria-hidden="true" preserveAspectRatio="none">
+      <path id="tutorialScrimPath" fill="rgba(0, 0, 0, 0.72)" fill-rule="evenodd"></path>
+    </svg>
+    <div class="tutorial-focus" data-tutorial-focus="0" aria-hidden="true"></div>
+    <div class="tutorial-focus" data-tutorial-focus="1" aria-hidden="true"></div>
+    <div class="tutorial-card" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle" aria-describedby="tutorialBody tutorialHint">
+      <p class="tutorial-kicker">新手教程</p>
+      <h2 id="tutorialTitle"></h2>
+      <div id="tutorialBody" class="tutorial-body"></div>
+      <p id="tutorialHint" class="tutorial-hint"></p>
+      <button id="tutorialContinueButton" type="button">开始探索</button>
+    </div>
+  </section>
+  <div id="twentyYearsComic" aria-hidden="true">
+    <div id="twentyYearsComicStage" class="comic-stage" tabindex="0" role="button" aria-label="二十年蒙太奇正在播放">
+      <section class="comic-shot is-active" data-comic-shot="0">
+        <div class="comic-visual">
+          <canvas class="comic-pixel-layer" width="800" height="450" aria-hidden="true"></canvas>
+          <img class="comic-detail-layer" src="../assets/main/images/chapter1-shot-01.webp" alt="安迪在床铺下藏起石锤" loading="lazy" decoding="async">
+          <div class="comic-grain"></div>
+        </div>
+        <div class="comic-caption bottom-left">
+          <p>夜深后，安迪从床铺下取出那把小锤。</p>
+        </div>
+      </section>
+      <section class="comic-shot" data-comic-shot="1">
+        <div class="comic-visual">
+          <canvas class="comic-pixel-layer" width="800" height="450" aria-hidden="true"></canvas>
+          <img class="comic-detail-layer" src="../assets/main/images/chapter1-shot-02.webp" alt="安迪在深夜掀开海报凿墙" loading="lazy" decoding="async">
+          <div class="comic-grain"></div>
+        </div>
+        <div class="comic-caption bottom-left">
+          <p>海报被轻轻掀开，墙壁在一次次敲击中松动。</p>
+        </div>
+      </section>
+      <section class="comic-shot" data-comic-shot="2">
+        <div class="comic-visual">
+          <canvas class="comic-pixel-layer" width="800" height="450" aria-hidden="true"></canvas>
+          <img class="comic-detail-layer" src="../assets/main/images/chapter1-shot-03.webp" alt="安迪白天把碎石藏进裤脚" loading="lazy" decoding="async">
+          <div class="comic-grain"></div>
+        </div>
+        <div class="comic-caption bottom-left">
+          <p>白天，他照常劳动，把挖出的碎石藏进宽松的裤脚。</p>
+        </div>
+      </section>
+      <section class="comic-shot" data-comic-shot="3">
+        <div class="comic-visual">
+          <canvas class="comic-pixel-layer" width="800" height="450" aria-hidden="true"></canvas>
+          <img class="comic-detail-layer" src="../assets/main/images/chapter1-shot-04.webp" alt="碎石从裤脚散落在操场尘土中" loading="lazy" decoding="async">
+          <div class="comic-grain"></div>
+        </div>
+        <div class="comic-caption top-left">
+          <p>碎石消失在操场的尘土里，日复一日，年复一年。<br>海报背后，一条通往自由的生路正在悄然延伸……</p>
+        </div>
+      </section>
+      <p class="comic-continue-hint" aria-live="polite">点击画面，从床上醒来</p>
+    </div>
+  </div>
+  <div id="miniGameOverlay" aria-hidden="true">
+    <div id="miniGameShell">
+      <div id="miniGameViewport" role="application" aria-label="剧情互动空间"></div>
+    </div>
+  </div>
+  <iframe id="endingFrame" title="《高墙之外》结局" hidden></iframe>
+
+  <section id="developerPanel" aria-hidden="true" aria-label="开发者节点工具">
+    <aside id="developerDrawer">
+      <header class="developer-head">
+        <h1>节点调试</h1>
+        <button id="developerCloseButton" type="button">关闭</button>
+      </header>
+      <p id="developerStatus" class="developer-status" role="status">正在连接互动空间…</p>
+      <div id="developerNodeList" aria-live="polite"></div>
+      <footer class="developer-footer">
+        <button id="developerReloadButton" type="button">回到主线</button>
+        <button id="developerJumpButton" type="button" disabled>跳转到选中节点</button>
+      </footer>
+    </aside>
+  </section>
+  <script src="../shared/global-controls.js?v=8.8-input-release1"></script>
+  <script src="../shared/react-runtime.js"></script>
+  <script src="../齿轮校准互动空间/component.js"></script>
+  <script src="../整理图书互动空间/source.js"></script>
+  <script src="../整理图书互动空间/component.js"></script>
+  <script src="../地下水管迷宫/component.js"></script>
+  <script src="./js/main.js?v=8.12-new-easter-eggs"></script>
+  <script src="./js/developer-bridge.js?v=8.8-first-wake-tutorial"></script>
+  <script src="../developer-tool.js"></script>
+</body>
+</html>

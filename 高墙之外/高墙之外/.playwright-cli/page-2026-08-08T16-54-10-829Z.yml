@@ -1,0 +1,5 @@
+- generic [ref=e1]:
+  - generic "黑墙庄园像素摆脱控制" [active] [ref=e2]
+  - generic "游戏控制":
+    - button "移动摇杆" [ref=e235]
+    - button "交互" [ref=e236]

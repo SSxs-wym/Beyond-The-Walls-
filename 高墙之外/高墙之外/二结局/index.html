@@ -1,0 +1,1027 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" href="data:,">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100b08">
+  <meta name="screen-orientation" content="landscape">
+  <meta name="x5-orientation" content="landscape">
+  <title>第二结局·《壁垒下的名单》</title>
+  <style>
+    :root {
+      --cream: #f4dfb4;
+      --paper: #d6a45a;
+      --ink: #160d09;
+      --red: #9f2f25;
+      --glass: rgba(18, 11, 7, 0.84);
+      /* 三个结局共用的基础画幅。 */
+      --ending-aspect-ratio: 16 / 9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      background: #080504;
+      color: var(--cream);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(121, 76, 33, 0.26), transparent 42rem),
+        #080504;
+    }
+
+    .story {
+      position: relative;
+      width: min(100vw, calc(100vh * 16 / 9));
+      aspect-ratio: var(--ending-aspect-ratio);
+      overflow: hidden;
+      border: 1px solid rgba(244, 223, 180, 0.32);
+      background: #050302;
+      box-shadow: 0 28px 100px rgba(0, 0, 0, 0.72);
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+      isolation: isolate;
+    }
+
+    .story:focus-visible {
+      box-shadow: 0 0 0 3px var(--paper), 0 28px 100px rgba(0, 0, 0, 0.72);
+    }
+
+    .base,
+    .panel {
+      position: absolute;
+      inset: -1px;
+      z-index: 0;
+      background-image: url("../assets/ending-two/storyboard.webp");
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+      background-position: center;
+      pointer-events: none;
+    }
+
+    .base {
+      filter: sepia(0.28) saturate(0.58) brightness(0.25) contrast(1.08);
+      transform: scale(1.003);
+    }
+
+    .panel {
+      filter: sepia(0.08) saturate(1.02) brightness(0.96) contrast(1.05);
+      opacity: 0;
+      transform: scale(1.014);
+      transition: opacity 620ms ease, transform 900ms ease, filter 650ms ease;
+    }
+
+    .panel.revealed {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .panel.active {
+      filter: sepia(0.02) saturate(1.12) brightness(1.08) contrast(1.04);
+    }
+
+    .panel[data-panel="0"] { clip-path: polygon(0 0, 34.2% 0, 32.7% 35.2%, 0 33.6%); }
+    .panel[data-panel="1"] { clip-path: polygon(33.2% 0, 67.5% 0, 66.2% 34.1%, 32.5% 35.1%); }
+    .panel[data-panel="2"] { clip-path: polygon(66.5% 0, 100% 0, 100% 35.6%, 66% 34.2%); }
+    .panel[data-panel="3"] { clip-path: polygon(0 32.9%, 32.9% 34.4%, 34.1% 68.4%, 0 66.1%); }
+    .panel[data-panel="4"] { clip-path: polygon(32.4% 34.1%, 66.9% 33.4%, 65.8% 67.2%, 33.6% 68.3%); }
+    .panel[data-panel="5"] { clip-path: polygon(66.2% 33.8%, 100% 35%, 100% 66.4%, 65.7% 67.5%); }
+    .panel[data-panel="6"] { clip-path: polygon(0 65.5%, 34% 67.6%, 32.8% 100%, 0 100%); }
+    .panel[data-panel="7"] { clip-path: polygon(33.5% 67.1%, 66.1% 66.4%, 67.4% 100%, 32.4% 100%); }
+    .panel[data-panel="8"] { clip-path: polygon(65.7% 66.8%, 100% 65.8%, 100% 100%, 66.8% 100%); }
+
+    .feature-image {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.22), transparent 25%, transparent 64%, rgba(0, 0, 0, 0.78)),
+        url("../assets/ending-two/network_reveal.webp") center / cover no-repeat;
+      opacity: 0;
+      transform: scale(1.035);
+      transition: opacity 720ms ease, transform 1100ms ease;
+      pointer-events: none;
+    }
+
+    .feature-image.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .grain {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      opacity: 0.11;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.48'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+    }
+
+    .topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: clamp(11px, 1.5vw, 25px) clamp(14px, 2.4vw, 40px);
+      background: linear-gradient(180deg, rgba(8, 5, 3, 0.86), rgba(8, 5, 3, 0));
+      pointer-events: none;
+      transition: opacity 500ms ease;
+    }
+
+    .chapter {
+      min-width: 0;
+      text-shadow: 0 2px 8px #000;
+    }
+
+    .eyebrow {
+      margin: 0 0 5px;
+      color: rgba(244, 223, 180, 0.7);
+      font-family: "KaiTi", "STKaiti", serif;
+      font-size: clamp(11px, 0.9vw, 16px);
+      letter-spacing: 0.22em;
+    }
+
+    .subtitle-wrap {
+      position: absolute;
+      left: 50%;
+      bottom: clamp(34px, 5.2vh, 60px);
+      z-index: 7;
+      width: min(88%, 1120px);
+      transform: translateX(-50%);
+      pointer-events: none;
+      transition: opacity 420ms ease;
+    }
+
+    .subtitle {
+      position: relative;
+      margin: 0;
+      padding: clamp(13px, 1.6vw, 24px) clamp(18px, 2.8vw, 44px);
+      border-top: 1px solid rgba(244, 223, 180, 0.55);
+      border-bottom: 1px solid rgba(244, 223, 180, 0.4);
+      background:
+        linear-gradient(90deg, transparent, rgba(15, 9, 6, 0.96) 10%, rgba(15, 9, 6, 0.96) 90%, transparent);
+      color: #fff4db;
+      font-family: "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+      font-size: clamp(14px, 1.35vw, 23px);
+      font-weight: 700;
+      line-height: 1.55;
+      text-align: center;
+      text-shadow: 0 2px 5px #000;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 440ms ease, transform 440ms ease;
+    }
+
+    .subtitle.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .subtitle-wrap.hidden {
+      opacity: 0;
+    }
+
+    .document-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 14;
+      display: grid;
+      place-items: center;
+      padding: clamp(34px, 6vw, 92px);
+      background: rgba(5, 3, 2, 0.72);
+      opacity: 0;
+      transform: scale(0.96);
+      transition: opacity 430ms ease, transform 520ms ease;
+      pointer-events: none;
+    }
+
+    .document-overlay.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .document-sheet {
+      position: relative;
+      width: min(82%, 860px);
+      max-height: 78vh;
+      overflow: auto;
+      padding: clamp(26px, 3.5vw, 52px);
+      border: 1px solid #8a6437;
+      background:
+        linear-gradient(rgba(235, 210, 160, 0.96), rgba(210, 180, 126, 0.96)),
+        #d8b97d;
+      color: #26170d;
+      font-family: "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.72);
+      clip-path: polygon(1% 0, 98.5% 1.3%, 100% 98%, 2% 100%, 0 2%);
+    }
+
+    .document-sheet::before {
+      content: "";
+      position: absolute;
+      inset: 9px;
+      border: 1px solid rgba(73, 42, 21, 0.34);
+      pointer-events: none;
+    }
+
+    .document-heading {
+      margin: 0 0 18px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid rgba(89, 35, 24, 0.65);
+      color: #4c2016;
+      font-size: clamp(22px, 2.6vw, 38px);
+      text-align: center;
+      letter-spacing: 0.08em;
+    }
+
+    .document-lines {
+      margin: 0;
+      padding-left: 1.5em;
+      font-size: clamp(15px, 1.45vw, 23px);
+      line-height: 1.8;
+    }
+
+    .document-lines li + li {
+      margin-top: 8px;
+    }
+
+    .document-quote {
+      margin: 0;
+      font-size: clamp(20px, 2.3vw, 36px);
+      line-height: 1.8;
+      text-align: center;
+    }
+
+    .dialogue-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      opacity: 0;
+      transition: opacity 400ms ease;
+      pointer-events: none;
+    }
+
+    .dialogue-layer.show {
+      opacity: 1;
+    }
+
+    .dialogue-bubble {
+      position: absolute;
+      max-width: min(31%, 430px);
+      padding: clamp(10px, 1.25vw, 19px) clamp(12px, 1.6vw, 24px);
+      border: 2px solid rgba(255, 240, 207, 0.9);
+      border-radius: 5px;
+      background: rgba(22, 13, 9, 0.94);
+      color: #fff1d2;
+      font-family: "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+      font-size: clamp(13px, 1.25vw, 22px);
+      font-weight: 700;
+      line-height: 1.55;
+      text-align: center;
+      box-shadow: 0 14px 38px rgba(0, 0, 0, 0.65);
+    }
+
+    .dialogue-bubble::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      width: 2px;
+      height: clamp(72px, 10vw, 160px);
+      background: rgba(255, 240, 207, 0.92);
+      box-shadow: 1px 0 3px rgba(0, 0, 0, 0.9);
+      transform-origin: top center;
+    }
+
+    .dialogue-bubble.winton {
+      left: 16%;
+      top: 48%;
+    }
+
+    .dialogue-bubble.winton::after {
+      left: 75%;
+      transform: rotate(0deg);
+    }
+
+    .dialogue-bubble.andy {
+      left: 52%;
+      right: auto;
+      top: 43%;
+    }
+
+    .dialogue-bubble.andy::after {
+      left: 35%;
+      transform: rotate(0deg);
+    }
+
+    .ending-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      grid-template-rows: 1fr 2fr 1fr;
+      align-items: center;
+      padding: clamp(24px, 6vw, 90px);
+      background: #000;
+      opacity: 0;
+      transition: opacity 850ms ease;
+      pointer-events: none;
+    }
+
+    .ending-screen.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .story.ending .topbar,
+    .story.ending .subtitle-wrap,
+    .story.ending .controls {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .ending-title {
+      align-self: end;
+      margin: 0;
+      color: rgba(244, 223, 180, 0.9);
+      font-family: "KaiTi", "STKaiti", serif;
+      font-size: clamp(19px, 2.2vw, 36px);
+      font-weight: 500;
+      letter-spacing: 0.13em;
+      text-align: center;
+    }
+
+    .typewriter {
+      width: min(88%, 1050px);
+      margin: 0 auto;
+      color: #f7f1e5;
+      font-family: "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+      font-size: clamp(23px, 3vw, 48px);
+      line-height: 1.75;
+      text-align: center;
+      white-space: pre-wrap;
+      text-shadow: 0 0 22px rgba(247, 241, 229, 0.2);
+    }
+
+    .typewriter.typing::after {
+      content: "";
+      display: inline-block;
+      width: 0.08em;
+      height: 1.05em;
+      margin-left: 0.12em;
+      vertical-align: -0.14em;
+      background: #f7f1e5;
+      animation: caretBlink 820ms steps(1) infinite;
+    }
+
+    .escape-style-reveal {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      padding:
+        max(12px, env(safe-area-inset-top))
+        max(12px, env(safe-area-inset-right))
+        max(12px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+      overflow: hidden;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 700ms ease;
+    }
+    .escape-style-reveal.show { opacity: 1; pointer-events: auto; }
+    .escape-style-reveal img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: 760px;
+      min-width: 0;
+      min-height: 0;
+      object-fit: contain;
+      object-position: center;
+      filter: drop-shadow(0 12px 30px rgba(0,0,0,.58));
+    }
+
+    .end-restart {
+      align-self: end;
+      margin: 0;
+      color: rgba(244, 223, 180, 0.48);
+      font-size: clamp(11px, 0.9vw, 14px);
+      letter-spacing: 0.12em;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 500ms ease;
+    }
+
+    .end-restart.show {
+      opacity: 1;
+    }
+
+    @keyframes caretBlink {
+      50% { opacity: 0; }
+    }
+
+    .controls {
+      position: absolute;
+      left: clamp(14px, 2.4vw, 40px);
+      right: clamp(14px, 2.4vw, 40px);
+      bottom: clamp(10px, 1.5vh, 20px);
+      z-index: 8;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      color: rgba(244, 223, 180, 0.58);
+      font-size: clamp(10px, 0.82vw, 14px);
+      pointer-events: none;
+      transition: opacity 500ms ease;
+    }
+
+    .hint {
+      margin: 0;
+      letter-spacing: 0.08em;
+    }
+
+    .progress {
+      display: flex;
+      justify-content: center;
+      gap: clamp(5px, 0.55vw, 9px);
+    }
+
+    .dot {
+      width: clamp(5px, 0.52vw, 8px);
+      height: clamp(5px, 0.52vw, 8px);
+      border: 1px solid rgba(244, 223, 180, 0.65);
+      border-radius: 50%;
+      background: transparent;
+      transition: transform 300ms ease, background 300ms ease;
+    }
+
+    .dot.past {
+      background: rgba(244, 223, 180, 0.45);
+    }
+
+    .dot.current {
+      background: var(--paper);
+      transform: scale(1.45);
+    }
+
+    .flash {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      background: #f8ebce;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .flash.play {
+      animation: flashCut 620ms ease both;
+    }
+
+    @keyframes flashCut {
+      0% { opacity: 0; }
+      18% { opacity: 0.26; }
+      100% { opacity: 0; }
+    }
+
+    @media (orientation: portrait) and (max-width: 900px) {
+      body {
+        width: 100vw;
+        height: 100vh;
+        min-height: 0;
+      }
+
+      .story {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: min(100vh, calc(100vw * 16 / 9));
+        height: min(56.25vh, 100vw);
+        aspect-ratio: var(--ending-aspect-ratio);
+        transform: translate(-50%, -50%) rotate(90deg);
+        transform-origin: center;
+      }
+
+      .subtitle-wrap {
+        bottom: clamp(36px, 5.2vh, 54px);
+        width: 94%;
+      }
+
+      .subtitle {
+        font-size: clamp(13px, 2.3vmin, 20px);
+      }
+
+      .dialogue-bubble {
+        max-width: 38%;
+        font-size: clamp(11px, 2.1vmin, 18px);
+      }
+
+      .dialogue-bubble.winton {
+        left: 5%;
+        top: 46%;
+      }
+
+      .dialogue-bubble.andy {
+        left: 52%;
+        right: auto;
+        top: 36%;
+      }
+
+      .controls {
+        grid-template-columns: 1fr auto;
+      }
+
+      .progress {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .panel,
+      .subtitle,
+      .feature-image,
+      .document-overlay {
+        transition-duration: 1ms;
+      }
+
+      .flash.play {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgm" autoplay loop preload="auto" playsinline>
+    <source src="../assets/ending-two/ending2_bgm.m4a" type="audio/mp4">
+  </audio>
+
+  <main
+    class="story"
+    id="story"
+    role="button"
+    tabindex="0"
+    aria-label="第二结局《壁垒下的名单》，点击继续"
+  >
+    <div class="base" aria-hidden="true"></div>
+    <div class="panel active revealed" data-panel="0" aria-hidden="true"></div>
+    <div class="panel" data-panel="1" aria-hidden="true"></div>
+    <div class="panel" data-panel="2" aria-hidden="true"></div>
+    <div class="panel" data-panel="3" aria-hidden="true"></div>
+    <div class="panel" data-panel="4" aria-hidden="true"></div>
+    <div class="panel" data-panel="5" aria-hidden="true"></div>
+    <div class="panel" data-panel="6" aria-hidden="true"></div>
+    <div class="panel" data-panel="7" aria-hidden="true"></div>
+    <div class="panel" data-panel="8" aria-hidden="true"></div>
+    <div class="feature-image" id="featureImage" aria-hidden="true"></div>
+
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div class="chapter">
+        <p class="eyebrow">第二结局 · 壁垒下的名单</p>
+      </div>
+    </header>
+
+    <div class="subtitle-wrap" aria-live="polite">
+      <p class="subtitle show" id="subtitle">
+        安迪脱离了拘禁地，但他带走的不只是自己的自由，还有足以撕开壁垒的证据。
+      </p>
+    </div>
+
+    <section class="document-overlay" id="documentOverlay" aria-hidden="true">
+      <article class="document-sheet">
+        <h2 class="document-heading" id="documentHeading"></h2>
+        <div id="documentContent"></div>
+      </article>
+    </section>
+
+    <section class="dialogue-layer" id="dialogueLayer" aria-hidden="true">
+      <div class="dialogue-bubble winton" id="wintonBubble"></div>
+      <div class="dialogue-bubble andy" id="andyBubble"></div>
+    </section>
+
+    <footer class="controls">
+      <p class="hint" id="hint">点击画面继续</p>
+      <div class="progress" id="progress" aria-hidden="true"></div>
+    </footer>
+
+    <div class="flash" id="flash" aria-hidden="true"></div>
+
+    <section class="ending-screen" id="endingScreen" aria-hidden="true">
+      <h2 class="ending-title">第二结局 · 《壁垒下的名单》</h2>
+      <p class="typewriter" id="typewriter" aria-live="polite"></p>
+      <p class="end-restart" id="endRestart">点击画面重新播放</p>
+      <div class="escape-style-reveal" id="escapeStyleReveal" aria-hidden="true"><img id="escapeStyleImage" alt="你的脱困风格"></div>
+    </section>
+  </main>
+
+  <script src="../shared/global-controls.js"></script>
+  <script src="../shared/ending-thanks.js?v=8.9-thanks2"></script>
+  <script>
+    const scenes = [
+      {
+        title: "分镜一：安迪脱离拘禁地",
+        narration: "安迪脱离了拘禁地，但他带走的不只是自己的自由，还有足以撕开壁垒的证据。"
+      },
+      {
+        title: "分镜二：失踪者名单",
+        narration: "老布与弗洛伊德留下的两件物证，加上汤米、瑞德和海伍德的证言与情报，让安迪发现，那些被宣布“转移”的被困者，此后再也没有出现。"
+      },
+      {
+        title: "分镜三：五条线索交汇",
+        narration: "被困者失踪的记录，与虚假工程款的结算日期高度重合。所谓的工程资金，实际上是在帮助某些人掩盖非法所得。",
+        secondaryType: "document",
+        documentHeading: "物证与证言交叉比对",
+        documentLines: [
+          "物证一：老布的 D 区转送登记页，保留了编号、日期与图书馆馆藏章。",
+          "物证二：弗洛伊德的 D-17 铜牌，刻有后门与夜间时刻。",
+          "汤米证言：转移档案没有接收拘禁地的盖章，三名被困者再未归来。",
+          "瑞德与海伍德口述：空壳公司结算日，正好对应夜车车牌与出入时间。",
+          "结论：两件原件与三条可核实证言共同指向人员转移与非法资金链。"
+        ]
+      },
+      {
+        title: "分镜四：安迪举报",
+        narration: "安迪将证据分别寄给报社和司法调查部门。信封里，是失踪者留下的最后一条线索。",
+        secondaryType: "document",
+        documentHeading: "安迪寄出的信",
+        documentQuote: "“如果这些被困者真的被转移，请查清他们究竟去了哪里。”"
+      },
+      {
+        title: "分镜五：典狱长落网",
+        narration: "工程结算单证明了典狱长长期利用拘禁地工程洗钱，但调查人员很快发现，这些黑钱背后还隐藏着更加可怕的来源。"
+      },
+      {
+        title: "分镜六：转移文件指向温顿",
+        narration: "进一步调查显示，温顿利用伪造案件制造替罪羊，再通过拘禁地将他们秘密转移。典狱长则伪造记录，并利用黑账洗白非法所得。",
+        secondaryType: "document",
+        documentHeading: "押送记录比对",
+        documentLines: [
+          "真实押送记录：没有任何接收拘禁地的签收凭证。",
+          "伪造转移文件：日期、编号与车辆记录彼此矛盾。",
+          "车辆路线：押送车辆最终驶入温顿控制的医疗机构。",
+          "结论：失踪被困者从未被送往其他拘禁地。"
+        ]
+      },
+      {
+        title: "分镜七：更大的黑幕曝光",
+        narration: "那些所谓的“被困者转移”，实际通向一个人口贩卖与非法器官交易网络。多名失踪被困者的真实遭遇，终于得到调查。",
+        feature: true
+      },
+      {
+        title: "分镜八：温顿被捕",
+        narration: "温顿与典狱长分别被押上警车。经过安迪身边时，温顿停下了脚步。",
+        secondaryType: "dialogue",
+        dialogue: [
+          "你明明已经脱离控制了，为什么还要追查下去？",
+          "因为还有人的名字，被留在了壁垒里面。"
+        ]
+      },
+      {
+        title: "最终画面：没有重逢",
+        narration: "温顿与典狱长受到了审判，拘禁地隐藏多年的黑幕终于暴露在阳光下。安迪洗清了自己的冤屈，也帮助那些被抹去姓名的人重新得到公正。但他与瑞德，最终没能在约定的海边重逢。",
+        secondaryType: "ending"
+      }
+    ];
+
+    const story = document.getElementById("story");
+    const panels = [...document.querySelectorAll(".panel")];
+    const subtitle = document.getElementById("subtitle");
+    const subtitleWrap = document.querySelector(".subtitle-wrap");
+    const hint = document.getElementById("hint");
+    const progress = document.getElementById("progress");
+    const flash = document.getElementById("flash");
+    const bgm = document.getElementById("bgm");
+    const featureImage = document.getElementById("featureImage");
+    const documentOverlay = document.getElementById("documentOverlay");
+    const documentHeading = document.getElementById("documentHeading");
+    const documentContent = document.getElementById("documentContent");
+    const dialogueLayer = document.getElementById("dialogueLayer");
+    const wintonBubble = document.getElementById("wintonBubble");
+    const andyBubble = document.getElementById("andyBubble");
+    const endingScreen = document.getElementById("endingScreen");
+    const typewriter = document.getElementById("typewriter");
+    const endRestart = document.getElementById("endRestart");
+    const escapeStyleReveal = document.getElementById("escapeStyleReveal");
+    const escapeStyleImage = document.getElementById("escapeStyleImage");
+    const escapeStyleImages = ["../四张图片/01_Insight.webp", "../四张图片/02_Action.webp", "../四张图片/03_Intuition.webp", "../四张图片/04_Perception.webp"];
+
+    let sceneIndex = 0;
+    let showingSecondary = false;
+    let transitioning = false;
+    let endingMode = false;
+    let endingReady = false;
+    let endingPhase = "idle";
+    let styleShownAt = 0;
+    let endingTypingTimer = 0;
+    let endingThanks = null;
+    const endingText = "接下来是你的脱困风格";
+    const endingControls = window.BeyondWallsControls.mount({
+      adapter: {
+        onMove() {},
+        onActionDown() { advanceStory(); },
+        onActionUp() {}
+      }
+    });
+
+    function syncEndingControls() {
+      const thanksState = endingThanks?.getControlState();
+      if (thanksState?.active) {
+        endingControls.setContext({
+          controlsVisible: true,
+          joystickVisible: false,
+          actionVisible: thanksState.actionVisible,
+          actionEnabled: thanksState.actionEnabled,
+          actionLabel: thanksState.actionLabel,
+          actionHighlighted: thanksState.actionEnabled
+        });
+        return;
+      }
+      endingControls.setContext({
+        controlsVisible: true,
+        joystickVisible: false,
+        actionVisible: true,
+        actionEnabled: true,
+        actionLabel: endingMode ? (endingPhase === "typing" ? "显示结果" : "继续") : "继续",
+        actionHighlighted: true
+      });
+    }
+
+    scenes.forEach((_, index) => {
+      const dot = document.createElement("span");
+      dot.className = `dot${index === 0 ? " current" : ""}`;
+      progress.appendChild(dot);
+    });
+
+    function startMusic() {
+      if (!bgm.paused) return;
+      bgm.muted = false;
+      bgm.volume = 0.72;
+      const playback = bgm.play();
+      playback?.catch(() => {});
+    }
+
+    function preferLandscape() {
+      if (!screen.orientation?.lock) return;
+      screen.orientation.lock("landscape").catch(() => {});
+    }
+
+    function setSubtitle(text) {
+      subtitle.classList.remove("show");
+
+      window.setTimeout(() => {
+        subtitle.textContent = text;
+        subtitle.classList.add("show");
+      }, 230);
+    }
+
+    function clearSpecialLayers() {
+      subtitleWrap.classList.remove("hidden");
+      documentOverlay.classList.remove("show");
+      documentOverlay.setAttribute("aria-hidden", "true");
+      dialogueLayer.classList.remove("show");
+      dialogueLayer.setAttribute("aria-hidden", "true");
+      featureImage.classList.remove("show");
+    }
+
+    function showDocument(scene) {
+      subtitleWrap.classList.add("hidden");
+      documentHeading.textContent = scene.documentHeading;
+      documentContent.replaceChildren();
+
+      if (scene.documentQuote) {
+        const quote = document.createElement("p");
+        quote.className = "document-quote";
+        quote.textContent = scene.documentQuote;
+        documentContent.appendChild(quote);
+      } else {
+        const list = document.createElement("ol");
+        list.className = "document-lines";
+        scene.documentLines.forEach((line) => {
+          const item = document.createElement("li");
+          item.textContent = line;
+          list.appendChild(item);
+        });
+        documentContent.appendChild(list);
+      }
+
+      documentOverlay.classList.add("show");
+      documentOverlay.setAttribute("aria-hidden", "false");
+    }
+
+    function showDialogue(scene) {
+      subtitleWrap.classList.add("hidden");
+      wintonBubble.textContent = scene.dialogue[0];
+      andyBubble.textContent = scene.dialogue[1];
+      dialogueLayer.classList.add("show");
+      dialogueLayer.setAttribute("aria-hidden", "false");
+    }
+
+    function showEscapeStyle() {
+      if (endingPhase === "style" || endingPhase === "thanks") return;
+      window.clearTimeout(endingTypingTimer);
+      typewriter.textContent = endingText;
+      typewriter.classList.remove("typing");
+      endRestart.classList.add("show");
+      if (!escapeStyleImage.getAttribute("src")) {
+        escapeStyleImage.src = escapeStyleImages[Math.floor(Math.random() * escapeStyleImages.length)];
+      }
+      escapeStyleReveal.classList.add("show");
+      escapeStyleReveal.setAttribute("aria-hidden", "false");
+      endingReady = true;
+      endingPhase = "style";
+      styleShownAt = performance.now();
+      syncEndingControls();
+    }
+
+    function startThanks(force) {
+      if (!endingThanks || endingThanks.isActive()) return;
+      if (!force && performance.now() - styleShownAt < 520) return;
+      endingPhase = "thanks";
+      escapeStyleReveal.classList.remove("show");
+      escapeStyleReveal.setAttribute("aria-hidden", "true");
+      endingThanks.start();
+      syncEndingControls();
+    }
+
+    function showEnding() {
+      endingMode = true;
+      endingReady = false;
+      endingPhase = "typing";
+      styleShownAt = 0;
+      story.classList.add("ending");
+      endingScreen.classList.add("show");
+      endingScreen.setAttribute("aria-hidden", "false");
+      typewriter.textContent = "";
+      typewriter.classList.add("typing");
+      endRestart.classList.remove("show");
+      escapeStyleReveal.classList.remove("show");
+      syncEndingControls();
+
+      let index = 0;
+      function typeNext() {
+        typewriter.textContent = endingText.slice(0, index);
+        if (index >= endingText.length) {
+          showEscapeStyle();
+          return;
+        }
+        index += 1;
+        endingTypingTimer = window.setTimeout(typeNext, 105);
+      }
+
+      endingTypingTimer = window.setTimeout(typeNext, 900);
+    }
+
+    function resetEnding() {
+      window.clearTimeout(endingTypingTimer);
+      endingMode = false;
+      endingReady = false;
+      endingPhase = "idle";
+      styleShownAt = 0;
+      story.classList.remove("ending");
+      endingScreen.classList.remove("show");
+      endingScreen.setAttribute("aria-hidden", "true");
+      typewriter.textContent = "";
+      escapeStyleReveal.classList.remove("show");
+      escapeStyleReveal.setAttribute("aria-hidden", "true");
+      syncEndingControls();
+      showScene(0);
+    }
+
+    function updateProgress() {
+      [...progress.children].forEach((dot, index) => {
+        dot.classList.toggle("past", index < sceneIndex);
+        dot.classList.toggle("current", index === sceneIndex);
+      });
+    }
+
+    function showScene(nextIndex) {
+      transitioning = true;
+      showingSecondary = false;
+      clearSpecialLayers();
+      flash.classList.remove("play");
+      void flash.offsetWidth;
+      flash.classList.add("play");
+
+      panels[sceneIndex].classList.remove("active");
+      sceneIndex = nextIndex;
+      if (sceneIndex === 0) {
+        panels.forEach((panel, index) => {
+          panel.classList.toggle("revealed", index === 0);
+        });
+      }
+      panels[sceneIndex].classList.add("active", "revealed");
+
+      setSubtitle(scenes[sceneIndex].narration);
+      featureImage.classList.toggle("show", Boolean(scenes[sceneIndex].feature));
+      updateProgress();
+      syncEndingControls();
+
+      if (scenes[sceneIndex].secondaryType === "document") {
+        hint.textContent = "点击放大查看文件";
+      } else if (scenes[sceneIndex].secondaryType === "dialogue") {
+        hint.textContent = "点击查看人物对话";
+      } else if (scenes[sceneIndex].secondaryType === "ending") {
+        hint.textContent = "点击查看结局字幕";
+      } else {
+        hint.textContent = "点击画面继续";
+      }
+
+      window.setTimeout(() => {
+        transitioning = false;
+      }, 650);
+    }
+
+    function advanceStory() {
+      if (transitioning) return;
+      startMusic();
+
+      if (endingMode) {
+        if (endingThanks?.isActive()) {
+          endingThanks.advance();
+        } else if (endingPhase === "typing") {
+          showEscapeStyle();
+        } else if (endingPhase === "style") {
+          startThanks(false);
+        }
+        return;
+      }
+
+      const scene = scenes[sceneIndex];
+      if (scene.secondaryType && !showingSecondary) {
+        showingSecondary = true;
+        if (scene.secondaryType === "document") {
+          showDocument(scene);
+          hint.textContent = "点击收起文件并进入下一幕";
+        } else if (scene.secondaryType === "dialogue") {
+          showDialogue(scene);
+          hint.textContent = "点击进入下一幕";
+        } else if (scene.secondaryType === "ending") {
+          showEnding();
+        }
+        return;
+      }
+
+      if (sceneIndex < scenes.length - 1) {
+        showScene(sceneIndex + 1);
+      } else {
+        showScene(0);
+      }
+    }
+
+    endingThanks = window.BeyondWallsEndingThanks.mount({
+      audio: bgm,
+      onStateChange: syncEndingControls
+    });
+    story.addEventListener("click", advanceStory);
+    document.addEventListener("pointerdown", startMusic, { capture: true });
+    document.addEventListener("pointerdown", preferLandscape, { capture: true, once: true });
+    window.addEventListener("load", () => {
+      bgm.load();
+      startMusic();
+      preferLandscape();
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key !== " " || event.defaultPrevented || event.repeat) return;
+      event.preventDefault();
+      startMusic();
+      advanceStory();
+    });
+    window.addEventListener("pagehide", () => {
+      endingThanks.destroy();
+      endingControls.destroy();
+    }, { once: true });
+    window.__endingTwoTest = {
+      state: () => ({ sceneIndex, endingMode, endingReady, endingPhase, thanksPage: endingThanks.getPageIndex() }),
+      showThanks() {
+        showEnding();
+        showEscapeStyle();
+        startThanks(true);
+      }
+    };
+    syncEndingControls();
+  </script>
+</body>
+</html>
