@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="./docs/readme/cover.jpg" width="900" alt="Beyond The Walls 游戏封面">
+  <img src="./README/docs/readme/cover.jpg" width="900" alt="Beyond The Walls 游戏封面">
 </p>
 
 ---
@@ -30,7 +30,7 @@
 ## 🧑‍🎮 主角
 
 <p align="center">
-  <img src="./docs/readme/character.jpg" width="360" alt="游戏主角像素形象">
+  <img src="./README/docs/readme/character.jpg" width="360" alt="游戏主角">
 </p>
 
 <p align="center">
