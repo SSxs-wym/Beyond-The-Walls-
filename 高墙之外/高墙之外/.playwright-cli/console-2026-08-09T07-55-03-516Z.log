@@ -1,7 +1,0 @@
-[  117315ms] ReferenceError: GameState is not defined
-    at <anonymous>:1:23
-    at eval (eval at <anonymous> (eval at evaluate (:311:30)), <anonymous>:1:2810)
-    at eval (eval at <anonymous> (eval at evaluate (:311:30)), <anonymous>:1:2867)
-    at eval (eval at evaluate (:311:30), <anonymous>:2:29)
-    at UtilityScript.evaluate (<anonymous>:313:16)
-    at UtilityScript.<anonymous> (<anonymous>:1:44)
