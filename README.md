@@ -6,6 +6,10 @@
 </p>
 
 <p align="center">
+  网页版体验链接：www.liyixiong.cn/game
+</p>
+
+<p align="center">
   HTML5 · CSS3 · JavaScript · Canvas 2D · Web Game
 </p>
 
