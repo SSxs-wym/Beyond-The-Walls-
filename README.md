@@ -16,7 +16,7 @@
   <img src="./README/docs/readme/cover.png" width="900" alt="Beyond The Walls 游戏封面">
 </p>
 
-在游戏开发过程中沉淀的一些skill 逐步进行开源
+在游戏开发过程中沉淀的一些skill 目前正在逐步开源
 https://github.com/liiiyiiixiii/Create-World-skills
 
 ---
