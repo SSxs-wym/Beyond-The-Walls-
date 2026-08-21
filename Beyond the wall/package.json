@@ -1,0 +1,11 @@
+{
+  "name": "beyond-the-walls",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "check:generated": "node scripts/build-mini-games.mjs --check",
+    "check:compliance": "node scripts/compliance-check.mjs",
+    "test": "node scripts/new-run-reset-tests.mjs && node scripts/playstyle-tests.mjs && node scripts/radio-tuning-tests.mjs && node scripts/storage-migration-tests.mjs",
+    "check": "npm run check:generated && npm run check:compliance && npm test"
+  }
+}

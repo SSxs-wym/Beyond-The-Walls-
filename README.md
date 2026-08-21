@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/31170301/README.md)
 # Beyond The Walls｜高墙之外
 
 <p align="center">
@@ -6,7 +5,7 @@
 </p>
 
 <p align="center">
-  网页版体验链接：www.liyixiong.cn/game
+  网页试玩：<a href="https://www.liyixiong.cn/game/">www.liyixiong.cn/game</a>
 </p>
 
 <p align="center">
@@ -14,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="./README/docs/readme/cover.jpg" width="900" alt="Beyond The Walls 游戏封面">
+  <img src="./README/docs/readme/cover.png" width="900" alt="Beyond The Walls 游戏封面">
 </p>
 
 ---
@@ -136,10 +135,16 @@ cd Beyond-The-Walls-
 游戏主体目前位于：
 
 ```text
-高墙之外/
+Beyond the wall/
 ```
 
-进入该目录后，通过项目中的网页入口运行游戏。
+进入游戏目录：
+
+```bash
+cd "Beyond the wall"
+```
+
+使用浏览器打开 `index.html` 即可运行游戏。
 
 如果直接打开 HTML 时出现图片、音频等资源无法加载的问题，建议使用 VS Code 的 **Live Server** 启动本地静态服务器。
 
@@ -150,25 +155,26 @@ cd Beyond-The-Walls-
 ```text
 Beyond-The-Walls-/
 │
-├── 高墙之外/
-│   ├── 游戏代码
-│   ├── 场景资源
-│   ├── 图片资源
-│   ├── 音效资源
-│   └── 开发及测试文件
+├── Beyond the wall/
+│   ├── index.html
+│   ├── game/              # 游戏代码
+│   ├── assets/            # 图片与音频资源
+│   ├── shared/            # 共用模块
+│   ├── scripts/           # 检查与测试脚本
+│   └── 互动玩法模块
 │
-├── docs/
-│   └── readme/
-│       ├── cover.jpg
-│       └── character.jpg
+├── README/
+│   └── docs/readme/       # README 展示图片
+│
+├── 演示视频.mp4
 │
 └── README.md
 ```
 
 其中：
 
-- `高墙之外/`：游戏主体
-- `docs/readme/`：README 展示图片
+- `Beyond the wall/`：游戏主体
+- `README/docs/readme/`：README 展示图片
 - `README.md`：GitHub 项目首页
 
 ---
@@ -227,7 +233,9 @@ Beyond-The-Walls-/
 
 ## 📌 项目说明
 
-本项目为学习、创作与比赛展示用途的非商业项目。
+本项目为学习、创作与比赛展示用途的非商业项目。仓库代码与原创资源不提供开源许可，未经许可不得复制、修改、分发或用于商业用途。
+
+项目使用的第三方组件按 `Beyond the wall/licenses/` 中的对应许可执行。
 
 部分剧情与视觉叙事灵感来源于经典监狱题材影视作品。
 

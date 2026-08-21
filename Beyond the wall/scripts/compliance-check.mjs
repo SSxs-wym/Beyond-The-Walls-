@@ -107,7 +107,7 @@ for (const menuFrame of ["1.webp", "2.webp", "start_screen_selected.webp"]) {
 }
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
-assert.equal(packageJson.license, "MIT", "package license must be MIT");
+assert.equal(packageJson.license, "UNLICENSED", "package must remain unlicensed");
 assert.ok(!packageJson.dependencies || Object.keys(packageJson.dependencies).length === 0, "runtime dependencies must remain bundled locally");
 
 console.log(`Offline compliance checks passed for ${runtimeFiles.length} runtime source files.`);
