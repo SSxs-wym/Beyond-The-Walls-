@@ -1,5 +1,5 @@
 [README.md](https://github.com/user-attachments/files/31170301/README.md)
-# Beyond The Walls｜壁垒之外
+# Beyond The Walls｜高墙之外
 
 <p align="center">
   <strong>一款将经典越狱叙事转化为可交互体验的 2D 像素剧情冒险游戏</strong>
@@ -17,7 +17,7 @@
 
 ## 🎬 项目简介
 
-**Beyond The Walls（壁垒之外）** 是一款以监狱逃脱与互动叙事为核心的 2D 像素剧情冒险游戏。
+**Beyond The Walls（高墙之外）** 是一款以监狱逃脱与互动叙事为核心的 2D 像素剧情冒险游戏。
 
 玩家不再只是旁观一段越狱故事，而是进入高墙之内，亲自探索监狱、与 NPC 交互、寻找关键道具、完成任务，并在漫长的准备与风险判断中一步步接近自由。
 
@@ -189,7 +189,7 @@ Beyond-The-Walls-/
 
 ## 💡 设计理念
 
-《壁垒之外》的核心并不是简单复刻一个越狱故事。
+《高墙之外》的核心并不是简单复刻一个越狱故事。
 
 我们更希望回答一个问题：
 
